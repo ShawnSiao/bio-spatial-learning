@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>生境 · 一滴血的旅行 ｜ 真实人体双循环动线与中央巨幅立体解剖系统</title>
+
+  <!-- Three.js 与控制器 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <style>
+    :root {
+      --bg: #030103;
+      --panel-bg: rgba(15, 8, 14, 0.92);
+      --panel-border: rgba(244, 63, 94, 0.32);
+      --holo-cyan: #06b6d4;
+      --holo-blue: #38bdf8;
+      --ruby: #f43f5e;
+      --arterial: #e11d48;
+      --venous: #3b82f6;
+      --gold: #fbbf24;
+      --text: #fff1f2;
+      --muted: #cbd5e1;
+      --subtext: #94a3b8;
+      --sidebar-w: 380px; /* 大幅拓宽左侧栏，确保文字数据一目了然 */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Noto Sans SC", sans-serif;
+      color: var(--text);
+    }
+
+    #webgl-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      outline: none;
+      z-index: 1;
+    }
+
+    /* 顶部标题栏 */
+    .top-bar {
+      position: absolute;
+      top: 18px;
+      left: calc(var(--sidebar-w) + 30px);
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .brand-tag {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--ruby);
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .brand-tag::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      background: var(--ruby);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--ruby);
+      animation: heartPulse 0.85s infinite ease-in-out;
+    }
+
+    .brand-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      background: linear-gradient(135deg, #fff 0%, #fda4af 50%, #f43f5e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 25px rgba(244, 63, 94, 0.4);
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      color: rgba(253, 164, 175, 0.85);
+      margin-top: 3px;
+      letter-spacing: 0.02em;
+    }
+
+    /* =========================================================================
+       左侧导航座舱面板：放大尺寸、字体加粗，保持全息圆柱图原貌
+       ========================================================================= */
+    .sidebar-panel {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      bottom: 18px;
+      width: var(--sidebar-w);
+      z-index: 15;
+      background: var(--panel-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--panel-border);
+      border-radius: 22px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(244, 63, 94, 0.12);
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(253, 164, 175, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(90deg, rgba(244, 63, 94, 0.1) 0%, transparent 100%);
+    }
+
+    .sidebar-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 14px 16px 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .sidebar-body::-webkit-scrollbar { width: 4px; }
+    .sidebar-body::-webkit-scrollbar-thumb { background: rgba(244, 63, 94, 0.35); border-radius: 4px; }
+
+    /* 全息能量圆柱舱 (保持之前版本的完整原貌) */
+    .hologram-chamber {
+      position: relative;
+      width: 100%;
+      height: 240px; /* 增大高度，视觉更开阔 */
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 40%, rgba(6, 182, 212, 0.1) 0%, rgba(15, 23, 42, 0.6) 65%, rgba(3, 1, 4, 0.95) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      box-shadow: inset 0 0 35px rgba(6, 182, 212, 0.15);
+      overflow: hidden;
+    }
+    .cylinder-top-cap {
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      background: radial-gradient(ellipse at center, rgba(6, 182, 212, 0.25) 0%, transparent 80%);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .cylinder-base-pedestal {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 85%;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(6, 182, 212, 0.85);
+      background: radial-gradient(ellipse at center, rgba(6, 182, 212, 0.5) 0%, rgba(14, 116, 144, 0.2) 60%, transparent 80%);
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.7);
+      pointer-events: none;
+      z-index: 5;
+    }
+    .cylinder-light-beam {
+      position: absolute;
+      bottom: 15px;
+      left: 10%;
+      right: 10%;
+      top: 15px;
+      background: linear-gradient(0deg, rgba(6, 182, 212, 0.18) 0%, rgba(56, 189, 248, 0.05) 45%, transparent 100%);
+      clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+    .cylinder-scanlines {
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(0deg, rgba(56, 189, 248, 0.04) 0px, rgba(56, 189, 248, 0.04) 1px, transparent 1px, transparent 4px);
+      pointer-events: none;
+      z-index: 7;
+    }
+    .laser-sweep-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.9), transparent);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
+      pointer-events: none;
+      z-index: 8;
+      animation: laserScan 4s ease-in-out infinite alternate;
+    }
+    @keyframes laserScan {
+      0% { top: 8%; opacity: 0.3; }
+      50% { opacity: 0.9; }
+      100% { top: 86%; opacity: 0.3; }
+    }
+    #mini-body-img {
+      max-height: 190px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.45));
+      user-select: none;
+      z-index: 3;
+    }
+
+    /* 当前解剖位点状态卡 (文字增大、行高优化) */
+    .status-site-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+    .site-tag-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .site-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .site-blood-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      letter-spacing: 0.03em;
+    }
+    .site-blood-badge.arterial {
+      background: rgba(225, 29, 72, 0.35);
+      color: #ffe4e6;
+      border: 1px solid rgba(225, 29, 72, 0.5);
+      box-shadow: 0 0 10px rgba(225, 29, 72, 0.4);
+    }
+    .site-blood-badge.venous {
+      background: rgba(59, 130, 246, 0.35);
+      color: #dbeafe;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    }
+    .site-flow-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* 解剖快捷跳跃芯片组 (文字清晰，按键增大) */
+    .jump-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .jump-btn {
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(253, 164, 175, 0.18);
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #e2e8f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .jump-btn:hover {
+      background: rgba(244, 63, 94, 0.22);
+      border-color: var(--ruby);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .jump-btn.active {
+      background: linear-gradient(135deg, rgba(225, 29, 72, 0.45), rgba(190, 18, 60, 0.35));
+      border-color: #f43f5e;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 12px rgba(225, 29, 72, 0.4);
+    }
+
+    /* 实时指标矩阵 (数值字号增大至 17px，清晰突出) */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .metric-item { display: flex; flex-direction: column; }
+    .metric-label { font-size: 10px; color: var(--subtext); text-transform: uppercase; letter-spacing: 0.04em; }
+    .metric-value { font-size: 17px; font-weight: 800; color: #fff; margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .metric-unit { font-size: 11px; color: var(--ruby); font-weight: 500; margin-left: 2px; }
+
+    /* 滑块控制 */
+    .slider-box { display: flex; flex-direction: column; gap: 5px; }
+    .slider-header { display: flex; justify-content: space-between; font-size: 12px; }
+    .slider {
+      width: 100%;
+      height: 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+    }
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--ruby);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--ruby);
+      transition: transform 0.15s ease;
+    }
+    .slider::-webkit-slider-thumb:hover { transform: scale(1.25); }
+
+    /* =========================================================================
+       中央区域：新增的更大尺寸立体解剖人体图与医学引线标注 (Huge 3D Anatomy Stage)
+       ========================================================================= */
+    .macro-anatomy-container {
+      position: absolute;
+      top: 65px;
+      left: calc(var(--sidebar-w) + 24px);
+      width: 500px;
+      bottom: 20px;
+      z-index: 8;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .macro-stage-card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      max-height: 720px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 真实 3D 骨骼、心脏与动静脉网透明解剖底图 */
+    #large-anatomy-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 30px rgba(244, 63, 94, 0.4)) contrast(1.15) brightness(1.05);
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* 心脏搏动红光脉冲 */
+    .cardiac-pulse-aura {
+      position: absolute;
+      top: 52%;
+      left: 51%;
+      transform: translate(-50%, -50%);
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(244, 63, 94, 0.75) 0%, rgba(225, 29, 72, 0.3) 50%, transparent 80%);
+      filter: blur(12px);
+      pointer-events: none;
+      opacity: 0.4;
+      transition: transform 0.1s ease, opacity 0.1s ease;
+    }
+
+    /* 叠置在人体上的 SVG 引线标注与红细胞真实物理流动动线 (500x500 绝对坐标) */
+    #macro-callouts-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* 动态医学引线标牌 (清晰文字与悬浮发光) */
+    .callout-label {
+      position: absolute;
+      background: rgba(18, 8, 16, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 11px;
+      color: #f1f5f9;
+      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    .callout-label:hover {
+      border-color: #fff;
+      transform: scale(1.06);
+      background: rgba(244, 63, 94, 0.35);
+    }
+    .callout-label.active {
+      border-color: var(--ruby);
+      background: linear-gradient(135deg, rgba(225, 29, 72, 0.55), rgba(190, 18, 60, 0.45));
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 18px rgba(225, 29, 72, 0.7);
+      transform: scale(1.12);
+    }
+    .callout-label.active-blue {
+      border-color: var(--holo-cyan);
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.55), rgba(14, 116, 144, 0.45));
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 18px rgba(6, 182, 212, 0.7);
+      transform: scale(1.12);
+    }
+    .callout-cn { font-size: 11px; font-weight: 700; }
+    .callout-en { font-size: 9px; color: rgba(255, 255, 255, 0.7); }
+
+    /* =========================================================================
+       右上角控制按钮与右下角顿悟卡片
+       ========================================================================= */
+    .action-panel {
+      position: absolute;
+      top: 18px;
+      right: 20px;
+      z-index: 15;
+      display: flex;
+      gap: 10px;
+    }
+    .btn {
+      padding: 9px 16px;
+      background: rgba(22, 10, 16, 0.85);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+    .btn:hover {
+      background: rgba(244, 63, 94, 0.25);
+      border-color: var(--ruby);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(244, 63, 94, 0.25);
+    }
+    .btn.active {
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      border-color: #f43f5e;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(225, 29, 72, 0.5);
+    }
+
+    .epiphany-box {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 15;
+      background: var(--panel-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      width: 360px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+    }
+    .epiphany-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .epiphany-content {
+      font-size: 12px;
+      line-height: 1.6;
+      color: rgba(255, 241, 242, 0.92);
+    }
+    .epiphany-highlight { color: var(--gold); font-weight: 600; }
+
+    /* 启动蒙层 */
+    #start-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      background: radial-gradient(circle at center, rgba(30, 8, 16, 0.95) 0%, rgba(3, 1, 3, 0.98) 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.6s ease, visibility 0.6s;
+    }
+    #start-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .start-circle {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e11d48, #881337);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 55px rgba(225, 29, 72, 0.8);
+      animation: heartPulse 1.2s infinite ease-in-out;
+      margin-bottom: 22px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .start-circle:hover { transform: scale(1.08); }
+    .start-circle svg { width: 38px; height: 38px; fill: #fff; margin-left: 4px; }
+
+    @keyframes heartPulse {
+      0% { transform: scale(1); box-shadow: 0 0 30px rgba(244, 63, 94, 0.4); }
+      15% { transform: scale(1.15); box-shadow: 0 0 55px rgba(244, 63, 94, 0.85); }
+      30% { transform: scale(1.02); }
+      45% { transform: scale(1.22); box-shadow: 0 0 65px rgba(244, 63, 94, 0.95); }
+      100% { transform: scale(1); box-shadow: 0 0 30px rgba(244, 63, 94, 0.4); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 3D 宏微观血液流体背景 (Three.js WebGL) -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <!-- 顶部主标题 -->
+  <div class="top-bar">
+    <div class="brand-tag">Bio Spatial Learning · 生境微剧场</div>
+    <h1 class="brand-title">一滴血的旅行</h1>
+    <div class="brand-sub">化身红细胞 · 亲历人体心搏流体动力学与中央巨幅立体解剖动线</div>
+  </div>
+
+  <!-- =========================================================================
+       左侧导航座舱面板：保留原版全息能量舱图，增大宽度和文字数据字号
+       ========================================================================= -->
+  <aside class="sidebar-panel">
+    <div class="sidebar-header">
+      <div class="sidebar-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="var(--ruby)">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        <span>全息人体双循环解剖定位仪</span>
+      </div>
+      <span id="systole-badge" style="font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 12px; background: rgba(225,29,72,0.25); color: #fecdd3; border: 1px solid rgba(225,29,72,0.5);">收缩期 射血</span>
+    </div>
+
+    <div class="sidebar-body">
+      <!-- 1. 原版全息圆柱能量舱 (保留之前版本原貌) -->
+      <div class="hologram-chamber">
+        <div class="cylinder-top-cap"></div>
+        <div class="cylinder-light-beam"></div>
+        <div class="cylinder-scanlines"></div>
+        <div class="laser-sweep-bar"></div>
+
+        <!-- 3D 全身解剖微缩图 -->
+        <img id="mini-body-img" src="assets/anatomy_3d_cutout.png" alt="Anatomy Cylinder" onerror="this.src='assets/anatomy_torso_3d.png'">
+
+        <div class="cylinder-base-pedestal"></div>
+      </div>
+
+      <!-- 2. 当前所处解剖位点状态卡 (文字增大、行高舒展) -->
+      <div class="status-site-card">
+        <div class="site-tag-row">
+          <span class="site-name" id="site-title">右心室 ➔ 肺动脉干</span>
+          <span class="site-blood-badge venous" id="site-blood-badge">缺氧静脉血</span>
+        </div>
+        <div class="site-flow-desc" id="site-flow-desc">
+          收缩期心室猛烈收缩，脱氧静脉血自右心室以 380 mm/s 喷入肺动脉干，直奔双肺微血管网。
+        </div>
+      </div>
+
+      <!-- 3. 快速穿越解剖关卡芯片 (字号优化，触控更准) -->
+      <div>
+        <div style="font-size: 10px; font-weight: 700; color: var(--subtext); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">点击瞬间穿越解剖位点</div>
+        <div class="jump-grid">
+          <button class="jump-btn active" id="btn-chip-0" onclick="jumpToAnatomy(0.02, 'btn-chip-0')">
+            <span>🫀</span><span>右心室 (泵出起航)</span>
+          </button>
+          <button class="jump-btn" id="btn-chip-1" onclick="jumpToAnatomy(0.24, 'btn-chip-1')">
+            <span>🫁</span><span>肺泡微血管 (气体交换)</span>
+          </button>
+          <button class="jump-btn" id="btn-chip-2" onclick="jumpToAnatomy(0.48, 'btn-chip-2')">
+            <span>❤️</span><span>左心室 (高压射血)</span>
+          </button>
+          <button class="jump-btn" id="btn-chip-3" onclick="jumpToAnatomy(0.68, 'btn-chip-3')">
+            <span>🧠</span><span>脑部中枢毛细血管</span>
+          </button>
+          <button class="jump-btn" id="btn-chip-4" onclick="jumpToAnatomy(0.85, 'btn-chip-4')">
+            <span>🩸</span><span>腹腔与下肢外周毛细</span>
+          </button>
+          <button class="jump-btn" id="btn-chip-5" onclick="jumpToAnatomy(0.96, 'btn-chip-5')">
+            <span>🔄</span><span>腔静脉 (回流右心房)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4. 生理流体实时指标 (数值增大至 17px，一目了然) -->
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <span class="metric-label">血流瞬时流速</span>
+          <span class="metric-value" id="val-speed">384<span class="metric-unit">mm/s</span></span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">红细胞剪切应力</span>
+          <span class="metric-value" id="val-shear">2.4<span class="metric-unit">Pa</span></span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">平均循环周期</span>
+          <span class="metric-value">22.4<span class="metric-unit">秒/周</span></span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">红细胞形变指数</span>
+          <span class="metric-value" id="val-deform">1.38<span class="metric-unit">伸长比</span></span>
+        </div>
+      </div>
+
+      <!-- 5. 交互滑块控制 -->
+      <div class="slider-box">
+        <div class="slider-header">
+          <span style="color: var(--muted); font-weight: 600;">心动节律 (BPM)</span>
+          <span id="val-bpm" style="font-weight: 700; color: #fff;">75 <span class="metric-unit">次/分</span></span>
+        </div>
+        <input type="range" class="slider" id="slider-bpm" min="45" max="160" value="75" oninput="updateBPM(this.value)">
+      </div>
+
+      <div class="slider-box">
+        <div class="slider-header">
+          <span style="color: var(--muted); font-weight: 600;">血氧饱和度 (SpO₂)</span>
+          <span id="val-spo2" style="font-weight: 700; color: #f43f5e;">98 <span class="metric-unit">%</span></span>
+        </div>
+        <input type="range" class="slider" id="slider-spo2" min="30" max="100" value="98" oninput="updateSpO2(this.value)">
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       中央区域：新增的更大尺寸立体解剖人体图与医学引线标注系统 (500px 巨幅展示)
+       ========================================================================= -->
+  <div class="macro-anatomy-container">
+    <div class="macro-stage-card" id="stage-card">
+      <!-- 心脏搏动背光红光脉冲 -->
+      <div class="cardiac-pulse-aura" id="cardiac-aura"></div>
+
+      <!-- 巨幅 3D 骨骼透视底图 (骨骼、透明肌理、3D心脏、动静脉网) -->
+      <img id="large-anatomy-img" src="assets/anatomy_3d_cutout.png" alt="Large 3D Anatomy" onerror="this.src='assets/anatomy_torso_3d.png'">
+
+      <!-- 叠置在人体上的 SVG 引线标注与红细胞真实物理流动动线 (500x500 绝对坐标) -->
+      <svg id="macro-callouts-svg" viewBox="0 0 500 500">
+        <defs>
+          <filter id="tracer-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3.5" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- 真实动静脉背景微流动虚线 -->
+        <path d="M 238 220 Q 215 160 170 160 M 238 220 Q 260 160 285 160"
+              fill="none" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4 4" opacity="0.65"/>
+        <path d="M 255 220 Q 248 135 242 85 Q 238 45 240 25 M 255 220 L 254 360 L 252 485"
+              fill="none" stroke="#f43f5e" stroke-width="2.2" stroke-dasharray="5 5" opacity="0.75"/>
+        <path d="M 236 485 L 236 360 L 236 240"
+              fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4" opacity="0.65"/>
+
+        <!-- 真实双循环巡游母线 (Master Circulation Path 500x500) -->
+        <path id="master-anatomy-path"
+              d="M 238 225 
+                 C 232 185, 210 155, 175 160 
+                 C 145 185, 155 245, 175 250 
+                 C 205 240, 240 230, 255 220 
+                 C 255 220, 260 255, 262 265 
+                 C 256 220, 248 135, 242 85 
+                 C 238 45, 240 25, 240 20 
+                 C 240 25, 252 85, 254 180 
+                 C 254 260, 254 380, 252 480 
+                 C 244 495, 236 495, 236 480 
+                 C 236 380, 236 280, 236 240 
+                 C 236 235, 238 228, 238 225 Z"
+              fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.2" stroke-dasharray="3 3"/>
+
+        <!-- 医学引线 (Leader Lines) 连向解剖标牌 -->
+        <g id="leader-lines-group" stroke="rgba(255,255,255,0.3)" stroke-width="1.2" stroke-dasharray="2 2">
+          <line id="line-pa" x1="225" y1="165" x2="140" y2="155"/>
+          <line id="line-lung" x1="165" y1="210" x2="70" y2="210"/>
+          <line id="line-aorta" x1="245" y1="130" x2="340" y2="120"/>
+          <line id="line-lv" x1="265" y1="250" x2="350" y2="245"/>
+          <line id="line-daorta" x1="254" y1="360" x2="340" y2="365"/>
+          <line id="line-ivc" x1="236" y1="380" x2="150" y2="385"/>
+        </g>
+
+        <!-- 实时红细胞追踪高能光标 (Hero RBC Reticle) -->
+        <g id="rbc-tracer" transform="translate(238, 225)">
+          <circle r="15" fill="none" stroke="#f43f5e" stroke-width="1.5" opacity="0.85">
+            <animate attributeName="r" values="5;24;5" dur="1.2s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.9;0.05;0.9" dur="1.2s" repeatCount="indefinite"/>
+          </circle>
+          <circle id="tracer-core" r="6" fill="#f43f5e" filter="url(#tracer-glow)"/>
+          <line id="tracer-dir" x1="0" y1="0" x2="0" y2="-9" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+        </g>
+      </svg>
+
+      <!-- 动态医学引线标牌 (清晰文字，点击直接瞬移) -->
+      <div class="callout-label" id="tag-pa" style="top: 27%; left: 6%;" onclick="jumpToAnatomy(0.12, 'btn-chip-0')">
+        <span class="callout-cn">肺动脉干</span>
+        <span class="callout-en">Pulmonary Artery</span>
+      </div>
+
+      <div class="callout-label" id="tag-lung" style="top: 39%; left: -6%;" onclick="jumpToAnatomy(0.24, 'btn-chip-1')">
+        <span class="callout-cn">肺泡毛细血管 (气体交换)</span>
+        <span class="callout-en">Pulmonary Capillaries</span>
+      </div>
+
+      <div class="callout-label" id="tag-aorta" style="top: 21%; right: 8%;" onclick="jumpToAnatomy(0.58, 'btn-chip-2')">
+        <span class="callout-cn">主动脉弓</span>
+        <span class="callout-en">Aortic Arch</span>
+      </div>
+
+      <div class="callout-label" id="tag-lv" style="top: 46%; right: 6%;" onclick="jumpToAnatomy(0.48, 'btn-chip-2')">
+        <span class="callout-cn">左心室 (高压射血)</span>
+        <span class="callout-en">Left Ventricle</span>
+      </div>
+
+      <div class="callout-label" id="tag-daorta" style="top: 69%; right: 8%;" onclick="jumpToAnatomy(0.85, 'btn-chip-4')">
+        <span class="callout-cn">降主动脉</span>
+        <span class="callout-en">Descending Aorta</span>
+      </div>
+
+      <div class="callout-label" id="tag-ivc" style="top: 73%; left: 8%;" onclick="jumpToAnatomy(0.96, 'btn-chip-5')">
+        <span class="callout-cn">下腔静脉 (回心)</span>
+        <span class="callout-en">Inferior Vena Cava</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右上角控制按钮 -->
+  <div class="action-panel">
+    <button class="btn active" id="btn-pov" onclick="setCameraMode('pov')">
+      <span>🚀 红细胞第一人称冲浪</span>
+    </button>
+    <button class="btn" id="btn-orbit" onclick="setCameraMode('orbit')">
+      <span>🔬 360° 微观自由观察</span>
+    </button>
+    <button class="btn" id="btn-audio" onclick="toggleAudio()">
+      <span id="audio-label">🔊 心音与血流声: 开</span>
+    </button>
+  </div>
+
+  <!-- 右下角知识顿悟卡片 -->
+  <div class="epiphany-box">
+    <div class="epiphany-header">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      <span>真实双循环拓扑顿悟点</span>
+    </div>
+    <div class="epiphany-content" id="epiphany-text">
+      <strong>结合中央人体立体透视与引线观察：</strong><br>
+      • <span class="epiphany-highlight">肺循环</span>：右心室 ➔ 肺动脉 ➔ 肺泡微血管（气体交换：暗蓝紫吸收 O₂ 转鲜红）➔ 肺静脉 ➔ 左心房。<br>
+      • <span class="epiphany-highlight">体循环</span>：左心室 ➔ 主动脉弓 ➔ 脑部/全身器官（释放 O₂ 变暗紫）➔ 腔静脉 ➔ 右心房。<br>
+      中央的动态引线与发光红细胞，将课本上的“抽象循环图”还原为<strong>有速度、有压力、有颜色跃迁的生命实体路线！</strong>
+    </div>
+  </div>
+
+  <!-- 首次点击进入蒙层 -->
+  <div id="start-overlay" onclick="startExperience()">
+    <div class="start-circle">
+      <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    </div>
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">点击进入人体血液微观世界</h2>
+    <p style="font-size: 13px; color: #fda4af;">启动 3D 具身心搏流体引擎与真实双循环立体标注系统</p>
+  </div>
+
+  <script>
+    /* =========================================================================
+       1. 生理参数与全局状态
+       ========================================================================= */
+    const STATE = {
+      bpm: 75,
+      spo2: 0.98,
+      cameraMode: 'pov',
+      audioEnabled: true,
+      curveProgress: 0.0,
+      currentSpeed: 300,
+      heartbeatPhase: 0.0,
+    };
+
+    /* =========================================================================
+       2. Web Audio API 程序化心音与流体合成器
+       ========================================================================= */
+    class CardiovascularAudioEngine {
+      constructor() {
+        this.ctx = null;
+        this.isMuted = false;
+        this.bloodFilter = null;
+        this.bloodGain = null;
+        this.hasStarted = false;
+      }
+
+      init() {
+        if (this.hasStarted) return;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AudioContext();
+        this.setupBloodFlowNoise();
+        this.hasStarted = true;
+      }
+
+      setupBloodFlowNoise() {
+        const bufferSize = this.ctx.sampleRate * 2;
+        const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = 0.99886 * b0 + white * 0.0555179;
+          b1 = 0.99332 * b1 + white * 0.0750759;
+          b2 = 0.96900 * b2 + white * 0.1538520;
+          b3 = 0.86650 * b3 + white * 0.3104856;
+          b4 = 0.55000 * b4 + white * 0.5329522;
+          b5 = -0.7616 * b5 - white * 0.0168980;
+          output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+          output[i] *= 0.11;
+          b6 = white * 0.115926;
+        }
+
+        const whiteNoise = this.ctx.createBufferSource();
+        whiteNoise.buffer = noiseBuffer;
+        whiteNoise.loop = true;
+
+        this.bloodFilter = this.ctx.createBiquadFilter();
+        this.bloodFilter.type = 'lowpass';
+        this.bloodFilter.frequency.setValueAtTime(220, this.ctx.currentTime);
+        this.bloodFilter.Q.setValueAtTime(3.0, this.ctx.currentTime);
+
+        this.bloodGain = this.ctx.createGain();
+        this.bloodGain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+
+        whiteNoise.connect(this.bloodFilter);
+        this.bloodFilter.connect(this.bloodGain);
+        this.bloodGain.connect(this.ctx.destination);
+        whiteNoise.start();
+      }
+
+      playS1() {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(65, now);
+        osc.frequency.exponentialRampToValueAtTime(35, now + 0.14);
+
+        gain.gain.setValueAtTime(0.85, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+
+        if (this.bloodFilter && this.bloodGain) {
+          this.bloodFilter.frequency.cancelScheduledValues(now);
+          this.bloodFilter.frequency.setValueAtTime(380, now);
+          this.bloodFilter.frequency.exponentialRampToValueAtTime(180, now + 0.35);
+
+          this.bloodGain.gain.cancelScheduledValues(now);
+          this.bloodGain.gain.setValueAtTime(0.65, now);
+          this.bloodGain.gain.exponentialRampToValueAtTime(0.25, now + 0.4);
+        }
+      }
+
+      playS2() {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(85, now);
+        osc.frequency.exponentialRampToValueAtTime(45, now + 0.11);
+
+        gain.gain.setValueAtTime(0.55, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.14);
+      }
+
+      setMute(mute) {
+        this.isMuted = mute;
+        if (this.bloodGain) {
+          this.bloodGain.gain.setValueAtTime(mute ? 0 : 0.35, this.ctx.currentTime);
+        }
+      }
+    }
+
+    const soundEngine = new CardiovascularAudioEngine();
+
+    /* =========================================================================
+       3. 动态内皮细胞血管纹理
+       ========================================================================= */
+    function createEndotheliumTexture() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1024;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+
+      const grad = ctx.createLinearGradient(0, 0, 0, 512);
+      grad.addColorStop(0, '#260206');
+      grad.addColorStop(0.5, '#480610');
+      grad.addColorStop(1, '#260206');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1024, 512);
+
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = 'rgba(255, 90, 120, 0.15)';
+      ctx.fillStyle = 'rgba(244, 63, 94, 0.05)';
+
+      const rows = 16;
+      const cols = 32;
+      const cellW = 1024 / cols;
+      const cellH = 512 / rows;
+
+      for (let r = 0; r < rows; r++) {
+        const offset = (r % 2) * (cellW * 0.5);
+        for (let c = 0; c < cols; c++) {
+          const x = c * cellW + offset;
+          const y = r * cellH;
+          ctx.beginPath();
+          ctx.ellipse(x + cellW * 0.5, y + cellH * 0.5, cellW * 0.45, cellH * 0.35, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = 'rgba(120, 10, 30, 0.25)';
+          ctx.beginPath();
+          ctx.arc(x + cellW * 0.5, y + cellH * 0.5, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(244, 63, 94, 0.05)';
+        }
+      }
+
+      ctx.strokeStyle = 'rgba(255, 140, 160, 0.08)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 40; i++) {
+        const py = Math.random() * 512;
+        ctx.beginPath();
+        ctx.moveTo(0, py);
+        ctx.lineTo(1024, py + (Math.random() - 0.5) * 30);
+        ctx.stroke();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.repeat.set(16, 2);
+      return texture;
+    }
+
+    /* =========================================================================
+       4. 真实双凹圆盘红细胞几何体（Evans-Fung 方程）
+       ========================================================================= */
+    function createErythrocyteGeometry(radius = 2.4) {
+      const points = [];
+      const segments = 40;
+      for (let i = 0; i <= segments; i++) {
+        const r = i / segments;
+        const h = Math.sqrt(Math.max(0, 1 - r * r)) * (0.24 + 1.85 * r * r - 1.15 * Math.pow(r, 4)) * 0.45;
+        points.push(new THREE.Vector2(r * radius, h * radius));
+      }
+      const geom = new THREE.LatheGeometry(points, 36);
+      geom.computeVertexNormals();
+      return geom;
+    }
+
+    /* =========================================================================
+       5. 3D WebGL 场景：背景深红血管管腔与右侧巨型特写红细胞
+       ========================================================================= */
+    const canvas = document.getElementById('webgl-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.4;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x060104);
+    scene.fog = new THREE.FogExp2(0x0c0206, 0.007);
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // 机位偏右，完美呼应中央人体与右侧巨大特写红细胞
+    camera.position.set(14, 4, 30);
+
+    const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+    orbitControls.enableDamping = true;
+    orbitControls.dampingFactor = 0.05;
+    orbitControls.enabled = false;
+
+    const ambientLight = new THREE.AmbientLight(0x4a0812, 1.6);
+    scene.add(ambientLight);
+
+    const heartLight = new THREE.PointLight(0xff2244, 2.8, 140);
+    scene.add(heartLight);
+
+    const heroFollowLight = new THREE.PointLight(0xff8899, 2.2, 45);
+    scene.add(heroFollowLight);
+
+    // 3D 闭合循环血管样条
+    const splinePoints = [
+      new THREE.Vector3(16, 0, 0),
+      new THREE.Vector3(40, 15, -60),
+      new THREE.Vector3(82, -10, -120),
+      new THREE.Vector3(98, -45, -200),
+      new THREE.Vector3(52, -60, -280),
+      new THREE.Vector3(-18, -40, -320),
+      new THREE.Vector3(-68, -10, -260),
+      new THREE.Vector3(-78, 25, -170),
+      new THREE.Vector3(-48, 35, -90),
+      new THREE.Vector3(-8, 15, -20)
+    ];
+    const vesselCurve = new THREE.CatmullRomCurve3(splinePoints, true, 'centripetal', 0.5);
+
+    const vesselRadius = 16;
+    const vesselGeom = new THREE.TubeGeometry(vesselCurve, 400, vesselRadius, 24, true);
+    const vesselMaterial = new THREE.MeshStandardMaterial({
+      map: createEndotheliumTexture(),
+      side: THREE.BackSide,
+      roughness: 0.38,
+      metalness: 0.12,
+      color: new THREE.Color(0xff3344),
+      emissive: new THREE.Color(0x33060c),
+      emissiveIntensity: 0.65
+    });
+    const vesselMesh = new THREE.Mesh(vesselGeom, vesselMaterial);
+    scene.add(vesselMesh);
+
+    /* =========================================================================
+       6. 3D 特写红细胞（Hero RBC）与伴游舰队
+       ========================================================================= */
+    const rbcGeom = createErythrocyteGeometry(3.2); // 较大尺寸，呈现右侧醒目特写
+    const rbcMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0xe11d48),
+      roughness: 0.3,
+      metalness: 0.05,
+      clearcoat: 0.9,
+      clearcoatRoughness: 0.18,
+      reflectivity: 0.85
+    });
+
+    const heroRBC = new THREE.Mesh(rbcGeom, rbcMaterial.clone());
+    scene.add(heroRBC);
+
+    const FLEET_COUNT = 45;
+    const fleetData = [];
+    const fleetGroup = new THREE.Group();
+
+    for (let i = 0; i < FLEET_COUNT; i++) {
+      const mesh = new THREE.Mesh(rbcGeom, rbcMaterial);
+      const progressOffset = Math.random();
+      const radialDist = Math.random() * (vesselRadius * 0.68);
+      const angle = Math.random() * Math.PI * 2;
+      const rotSpeed = new THREE.Vector3(
+        (Math.random() - 0.5) * 1.5,
+        (Math.random() - 0.5) * 1.5,
+        (Math.random() - 0.5) * 1.5
+      );
+      const scale = 0.75 + Math.random() * 0.35;
+      mesh.scale.set(scale, scale, scale);
+
+      fleetGroup.add(mesh);
+      fleetData.push({ mesh, progressOffset, radialDist, angle, rotSpeed });
+    }
+    scene.add(fleetGroup);
+
+    /* =========================================================================
+       7. 氧分子微粒系统 (Bokeh Particles)
+       ========================================================================= */
+    const PARTICLE_COUNT = 320;
+    const particleGeom = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(PARTICLE_COUNT * 3);
+    const particleOffsets = [];
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particlePositions[i * 3] = 0;
+      particlePositions[i * 3 + 1] = 0;
+      particlePositions[i * 3 + 2] = 0;
+      particleOffsets.push({
+        progress: Math.random(),
+        radius: Math.random() * (vesselRadius * 0.8),
+        angle: Math.random() * Math.PI * 2,
+        speedFactor: 0.8 + Math.random() * 0.4
+      });
+    }
+    particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+
+    function createGlowPointTexture() {
+      const c = document.createElement('canvas');
+      c.width = 64; c.height = 64;
+      const g = c.getContext('2d').createRadialGradient(32, 32, 0, 32, 32, 32);
+      g.addColorStop(0, 'rgba(255, 230, 150, 1)');
+      g.addColorStop(0.3, 'rgba(255, 100, 130, 0.6)');
+      g.addColorStop(1, 'rgba(255, 50, 80, 0)');
+      c.getContext('2d').fillStyle = g;
+      c.getContext('2d').fillRect(0, 0, 64, 64);
+      return new THREE.CanvasTexture(c);
+    }
+
+    const particleMaterial = new THREE.PointsMaterial({
+      size: 2.2,
+      map: createGlowPointTexture(),
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      color: new THREE.Color(0xfbbf24)
+    });
+    const particleSystem = new THREE.Points(particleGeom, particleMaterial);
+    scene.add(particleSystem);
+
+    /* =========================================================================
+       8. 真实人体双循环母线同步与医学引线交互 (Master Anatomical Synchronizer)
+       ========================================================================= */
+    const masterAnatomyPath = document.getElementById('master-anatomy-path');
+    const rbcTracer = document.getElementById('rbc-tracer');
+    const tracerCore = document.getElementById('tracer-core');
+    const tracerDir = document.getElementById('tracer-dir');
+    const cardiacAura = document.getElementById('cardiac-aura');
+
+    const siteTitle = document.getElementById('site-title');
+    const siteBloodBadge = document.getElementById('site-blood-badge');
+    const siteFlowDesc = document.getElementById('site-flow-desc');
+    const systoleBadge = document.getElementById('systole-badge');
+
+    const tags = {
+      pa: document.getElementById('tag-pa'),
+      lung: document.getElementById('tag-lung'),
+      aorta: document.getElementById('tag-aorta'),
+      lv: document.getElementById('tag-lv'),
+      daorta: document.getElementById('tag-daorta'),
+      ivc: document.getElementById('tag-ivc')
+    };
+
+    const totalPathLength = masterAnatomyPath.getTotalLength();
+
+    function updateAnatomicalCirculation(progress, pulseCurve) {
+      // 1. 获取人体 500x500 解剖模型上的绝对坐标
+      const currentLen = (progress * totalPathLength) % totalPathLength;
+      const pt = masterAnatomyPath.getPointAtLength(currentLen);
+
+      // 计算切线方向
+      const nextLen = ((progress + 0.005) * totalPathLength) % totalPathLength;
+      const nextPt = masterAnatomyPath.getPointAtLength(nextLen);
+      const angleDeg = Math.atan2(nextPt.y - pt.y, nextPt.x - pt.x) * (180 / Math.PI) + 90;
+
+      rbcTracer.setAttribute('transform', `translate(${pt.x}, ${pt.y})`);
+      tracerDir.setAttribute('transform', `rotate(${angleDeg})`);
+
+      // 2. 心脏搏动背光光晕同步
+      const pulseScale = 1.0 + pulseCurve * 0.42;
+      cardiacAura.style.transform = `translate(-50%, -50%) scale(${pulseScale})`;
+      cardiacAura.style.opacity = 0.3 + pulseCurve * 0.6;
+
+      // 3. 真实体内双循环阶段判定与引线高亮激活
+      Object.values(tags).forEach(t => t.className = 'callout-label');
+
+      let title = "";
+      let desc = "";
+      let isArterial = false;
+      let activeBtnId = "btn-chip-0";
+
+      if (progress < 0.16) {
+        title = "右心室 ➔ 肺动脉干";
+        desc = "【肺循环起跑】静脉脱氧血受心肌高压冲压射出，沿肺动脉干分流冲向左右双肺。";
+        isArterial = false;
+        activeBtnId = "btn-chip-0";
+        tags.pa.className = 'callout-label active-blue';
+      } else if (progress < 0.38) {
+        title = "肺泡微血管床 (气体交换)";
+        desc = "【气体交换】红细胞穿入树状肺泡微血管，排出 CO₂，吸收 O₂，血红蛋白瞬间染为鲜红！";
+        isArterial = true;
+        activeBtnId = "btn-chip-1";
+        tags.lung.className = 'callout-label active';
+      } else if (progress < 0.52) {
+        title = "肺静脉 ➔ 左心室 (准备射血)";
+        desc = "【富氧血回心】鲜红高氧血汇入左心房，穿过二尖瓣充盈左心室，蓄积巨大体循环动能。";
+        isArterial = true;
+        activeBtnId = "btn-chip-2";
+        tags.lv.className = 'callout-label active';
+      } else if (progress < 0.72) {
+        title = "主动脉弓 ➔ 颈动脉与脑部";
+        desc = "【体循环爆发】左心室强力收缩，血液以 500+ mm/s 极速喷入主动脉弓，优先保证大脑供氧。";
+        isArterial = true;
+        activeBtnId = "btn-chip-3";
+        tags.aorta.className = 'callout-label active';
+      } else if (progress < 0.88) {
+        title = "胸腹主动脉 ➔ 全身毛细血管";
+        desc = "【组织释氧】血液下行冲入腹腔内脏与下肢肌群，卸载氧气给细胞呼吸，转为暗紫脱氧血。";
+        isArterial = false;
+        activeBtnId = "btn-chip-4";
+        tags.daorta.className = 'callout-label active-blue';
+      } else {
+        title = "下腔静脉 ➔ 右心房 (完成闭环)";
+        desc = "【静脉回流】缺氧静脉血经静脉瓣防止逆流，平稳汇入右心房，完成一次完整人体大循环！";
+        isArterial = false;
+        activeBtnId = "btn-chip-5";
+        tags.ivc.className = 'callout-label active-blue';
+      }
+
+      // 更新状态卡
+      siteTitle.textContent = title;
+      siteFlowDesc.textContent = desc;
+
+      if (isArterial) {
+        siteBloodBadge.textContent = "富氧动脉血";
+        siteBloodBadge.className = "site-blood-badge arterial";
+        tracerCore.setAttribute('fill', '#f43f5e');
+      } else {
+        siteBloodBadge.textContent = "缺氧静脉血";
+        siteBloodBadge.className = "site-blood-badge venous";
+        tracerCore.setAttribute('fill', '#38bdf8');
+      }
+
+      // 更新芯片激活高亮
+      document.querySelectorAll('.jump-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(activeBtnId);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+
+    /* =========================================================================
+       9. 心搏流体动力学更新
+       ========================================================================= */
+    let lastTime = performance.now();
+    let s1Triggered = false;
+    let s2Triggered = false;
+
+    function updateCardiovascularPhysics(deltaTime) {
+      const beatDuration = 60 / STATE.bpm;
+      STATE.heartbeatPhase = (STATE.heartbeatPhase + deltaTime / beatDuration) % 1.0;
+
+      const p = STATE.heartbeatPhase;
+      let pulseCurve = 0;
+
+      if (p < 0.35) {
+        pulseCurve = Math.sin((p / 0.35) * Math.PI);
+        if (!s1Triggered && p > 0.02) {
+          soundEngine.playS1();
+          s1Triggered = true;
+          s2Triggered = false;
+        }
+        if (!s2Triggered && p > 0.28) {
+          soundEngine.playS2();
+          s2Triggered = true;
+        }
+      } else {
+        pulseCurve = 0.15 * Math.sin(((p - 0.35) / 0.65) * Math.PI);
+        if (p > 0.95) {
+          s1Triggered = false;
+        }
+      }
+
+      const baseSpeed = 220 * (STATE.bpm / 75);
+      STATE.currentSpeed = baseSpeed + pulseCurve * 320;
+
+      const progressDelta = (STATE.currentSpeed * 0.00012) * deltaTime;
+      STATE.curveProgress = (STATE.curveProgress + progressDelta) % 1.0;
+
+      const vesselScale = 1.0 + pulseCurve * 0.055;
+      vesselMesh.scale.set(vesselScale, vesselScale, 1.0);
+      heartLight.intensity = 1.8 + pulseCurve * 2.2;
+
+      // 主角红细胞在 3D 管道中推进
+      const heroPoint = vesselCurve.getPointAt(STATE.curveProgress);
+      const heroTangent = vesselCurve.getTangentAt(STATE.curveProgress).normalize();
+      heroRBC.position.copy(heroPoint);
+      heroFollowLight.position.copy(heroPoint).add(new THREE.Vector3(0, 2, 0));
+
+      // 伴游舰队更新
+      for (let i = 0; i < FLEET_COUNT; i++) {
+        const item = fleetData[i];
+        const prog = (STATE.curveProgress + item.progressOffset) % 1.0;
+        const pt = vesselCurve.getPointAt(prog);
+        const tan = vesselCurve.getTangentAt(prog).normalize();
+
+        const up = new THREE.Vector3(0, 1, 0);
+        const normal = new THREE.Vector3().crossVectors(tan, up).normalize();
+        const binormal = new THREE.Vector3().crossVectors(normal, tan).normalize();
+
+        const offsetX = Math.cos(item.angle) * item.radialDist;
+        const offsetY = Math.sin(item.angle) * item.radialDist;
+        const pos = pt.clone().addScaledVector(normal, offsetX).addScaledVector(binormal, offsetY);
+
+        item.mesh.position.copy(pos);
+        item.mesh.rotation.x += item.rotSpeed.x * deltaTime;
+        item.mesh.rotation.y += item.rotSpeed.y * deltaTime;
+        item.mesh.rotation.z += item.rotSpeed.z * deltaTime;
+      }
+
+      // 氧粒子流动
+      const positions = particleSystem.geometry.attributes.position.array;
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        const off = particleOffsets[i];
+        off.progress = (off.progress + progressDelta * off.speedFactor) % 1.0;
+        const pt = vesselCurve.getPointAt(off.progress);
+        const tan = vesselCurve.getTangentAt(off.progress).normalize();
+        const up = new THREE.Vector3(0, 1, 0);
+        const normal = new THREE.Vector3().crossVectors(tan, up).normalize();
+        const binormal = new THREE.Vector3().crossVectors(normal, tan).normalize();
+
+        const px = pt.x + normal.x * (Math.cos(off.angle) * off.radius) + binormal.x * (Math.sin(off.angle) * off.radius);
+        const py = pt.y + normal.y * (Math.cos(off.angle) * off.radius) + binormal.y * (Math.sin(off.angle) * off.radius);
+        const pz = pt.z + normal.z * (Math.cos(off.angle) * off.radius) + binormal.z * (Math.sin(off.angle) * off.radius);
+
+        positions[i * 3] = px;
+        positions[i * 3 + 1] = py;
+        positions[i * 3 + 2] = pz;
+      }
+      particleSystem.geometry.attributes.position.needsUpdate = true;
+
+      // 运镜控制
+      if (STATE.cameraMode === 'pov') {
+        const lookAheadProgress = (STATE.curveProgress + 0.04) % 1.0;
+        const lookAtPt = vesselCurve.getPointAt(lookAheadProgress);
+
+        const camPos = heroPoint.clone().add(heroTangent.clone().multiplyScalar(-4.5)).add(new THREE.Vector3(2.5, 1.2, 0));
+        camera.position.lerp(camPos, 0.2);
+        camera.lookAt(lookAtPt);
+
+        camera.fov = 60 + pulseCurve * 8;
+        camera.updateProjectionMatrix();
+      } else {
+        orbitControls.target.lerp(heroPoint, 0.1);
+        orbitControls.update();
+      }
+
+      // 同步中央人体真实解剖动线与引线标注
+      updateAnatomicalCirculation(STATE.curveProgress, pulseCurve);
+
+      // 同步遥测数值
+      document.getElementById('val-speed').innerHTML = `${Math.round(STATE.currentSpeed)}<span class="metric-unit">mm/s</span>`;
+      const shearVal = (1.2 + pulseCurve * 2.8).toFixed(1);
+      document.getElementById('val-shear').innerHTML = `${shearVal}<span class="metric-unit">Pa</span>`;
+      const deformRatio = (1.20 + pulseCurve * 0.35).toFixed(2);
+      document.getElementById('val-deform').innerHTML = `${deformRatio}<span class="metric-unit">伸长比</span>`;
+
+      if (p < 0.35) {
+        systoleBadge.textContent = "收缩期 (射血)";
+        systoleBadge.style.background = "rgba(225,29,72,0.3)";
+        systoleBadge.style.color = "#ffe4e6";
+      } else {
+        systoleBadge.textContent = "舒张期 (充盈)";
+        systoleBadge.style.background = "rgba(59,130,246,0.25)";
+        systoleBadge.style.color = "#dbeafe";
+      }
+    }
+
+    /* =========================================================================
+       10. 交互跳转与参数控制
+       ========================================================================= */
+    function jumpToAnatomy(targetProgress, btnId) {
+      STATE.curveProgress = targetProgress;
+      document.querySelectorAll('.jump-btn').forEach(b => b.classList.remove('active'));
+      const btn = document.getElementById(btnId);
+      if (btn) btn.classList.add('active');
+    }
+
+    function setCameraMode(mode) {
+      STATE.cameraMode = mode;
+      const btnPov = document.getElementById('btn-pov');
+      const btnOrbit = document.getElementById('btn-orbit');
+
+      if (mode === 'pov') {
+        btnPov.classList.add('active');
+        btnOrbit.classList.remove('active');
+        orbitControls.enabled = false;
+      } else {
+        btnOrbit.classList.add('active');
+        btnPov.classList.remove('active');
+        orbitControls.enabled = true;
+        const hp = heroRBC.position;
+        camera.position.set(hp.x + 10, hp.y + 6, hp.z + 10);
+        orbitControls.target.copy(hp);
+      }
+    }
+
+    function updateBPM(val) {
+      STATE.bpm = parseInt(val);
+      document.getElementById('val-bpm').innerHTML = `${STATE.bpm} <span class="metric-unit">次/分</span>`;
+    }
+
+    function updateSpO2(val) {
+      STATE.spo2 = parseInt(val) / 100;
+      document.getElementById('val-spo2').innerHTML = `${val} <span class="metric-unit">%</span>`;
+
+      const arterialColor = new THREE.Color(0xe11d48);
+      const venousColor = new THREE.Color(0x500d1e);
+      const targetColor = venousColor.clone().lerp(arterialColor, Math.pow(STATE.spo2, 1.6));
+
+      heroRBC.material.color.copy(targetColor);
+      rbcMaterial.color.copy(targetColor);
+      particleMaterial.color.set(STATE.spo2 > 0.7 ? 0xfbbf24 : 0x38bdf8);
+    }
+
+    function toggleAudio() {
+      STATE.audioEnabled = !STATE.audioEnabled;
+      soundEngine.setMute(!STATE.audioEnabled);
+      document.getElementById('audio-label').textContent = STATE.audioEnabled ? "🔊 心音与血流声: 开" : "🔈 心音与血流声: 关";
+    }
+
+    function startExperience() {
+      document.getElementById('start-overlay').classList.add('hidden');
+      soundEngine.init();
+    }
+
+    /* =========================================================================
+       11. 渲染主循环与视口自适应
+       ========================================================================= */
+    function animate(timestamp) {
+      requestAnimationFrame(animate);
+      const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+      lastTime = timestamp;
+
+      updateCardiovascularPhysics(dt);
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
