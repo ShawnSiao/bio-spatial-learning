@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>生境 · 一滴血的旅行 ｜ 巨幅立体人体透视与 1/4 微观血液视窗系统</title>
+  <title>生境 · 全息人体生命图谱 ｜ 一滴血的旅行与器官骨骼细胞微观宇宙</title>
 
-  <!-- Three.js 与控制器 -->
+  <!-- Three.js 与 OrbitControls -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
@@ -21,6 +21,8 @@
       --arterial: #e11d48;
       --venous: #3b82f6;
       --gold: #fbbf24;
+      --emerald: #10b981;
+      --purple: #a855f7;
       --text: #fff1f2;
       --muted: #cbd5e1;
       --subtext: #94a3b8;
@@ -36,9 +38,6 @@
       color: var(--text);
     }
 
-    /* =========================================================================
-       全局三栏布局：左侧控制 HUD + 中间巨幅透视人体 + 右侧 1/4 拟真微观视窗
-       ========================================================================= */
     #app-container {
       display: flex;
       width: 100vw;
@@ -99,15 +98,15 @@
     }
 
     /* =========================================================================
-       1. 左侧控制导航座舱 (Left Column: 350px - 420px 饱满宽幅)
+       1. 左侧控制导航座舱 (Left Column: 350px - 420px 宽幅)
        ========================================================================= */
     .left-sidebar {
       width: clamp(350px, 20vw, 420px);
       height: 100%;
-      padding: 84px 18px 18px 18px;
+      padding: 82px 18px 18px 18px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       z-index: 15;
       background: linear-gradient(90deg, rgba(16, 8, 15, 0.96) 0%, rgba(14, 7, 13, 0.88) 100%);
       border-right: 1px solid var(--panel-border);
@@ -119,115 +118,136 @@
     .left-sidebar::-webkit-scrollbar { width: 4px; }
     .left-sidebar::-webkit-scrollbar-thumb { background: rgba(244, 63, 94, 0.35); border-radius: 4px; }
 
-    /* 当前流经部位大字指示卡 */
-    .status-card {
-      background: var(--card-bg);
-      border: 1px solid rgba(244, 63, 94, 0.45);
-      border-radius: 14px;
-      padding: 14px 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55), inset 0 0 20px rgba(244, 63, 94, 0.08);
+    /* 人体多维宏观与微观谱系统计看板 */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      background: rgba(22, 10, 18, 0.85);
+      border: 1px solid rgba(244, 63, 94, 0.28);
+      border-radius: 12px;
+      padding: 10px 6px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     }
-    .status-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .status-card-title {
-      font-size: 11px;
-      color: var(--subtext);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 600;
-    }
-    .blood-type-tag {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-    }
-    .blood-type-tag.arterial {
-      background: rgba(225, 29, 72, 0.35);
-      color: #ffe4e6;
-      border: 1px solid rgba(225, 29, 72, 0.55);
-      box-shadow: 0 0 12px rgba(225, 29, 72, 0.35);
-    }
-    .blood-type-tag.venous {
-      background: rgba(59, 130, 246, 0.35);
-      color: #dbeafe;
-      border: 1px solid rgba(59, 130, 246, 0.55);
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
-    }
-    .site-main-text {
-      font-size: 18px;
+    .stat-item-num {
+      font-size: 15px;
       font-weight: 800;
       color: #fff;
-      margin-bottom: 6px;
-      letter-spacing: 0.02em;
-      line-height: 1.35;
+      line-height: 1.2;
     }
-    .site-desc-text {
-      font-size: 12.5px;
-      color: var(--muted);
-      line-height: 1.6;
+    .stat-item-num span {
+      font-size: 10px;
+      color: var(--ruby);
+      margin-left: 1px;
+    }
+    .stat-item-label {
+      font-size: 9px;
+      color: var(--subtext);
+      margin-top: 2px;
+      white-space: nowrap;
     }
 
-    /* 流速调节器（支持放慢慢动作观察） */
-    .speed-control-card {
-      background: var(--card-bg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 14px;
-      padding: 12px 16px;
+    /* 分类标签切换栏 */
+    .category-tab-bar {
+      display: flex;
+      gap: 4px;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .speed-row-header {
+    .category-tab {
+      flex: 1;
+      padding: 7px 2px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .category-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .category-tab.active {
+      background: linear-gradient(135deg, rgba(225, 29, 72, 0.6), rgba(190, 18, 60, 0.45));
+      color: #fff;
+      box-shadow: 0 0 10px rgba(225, 29, 72, 0.4);
+    }
+
+    /* 解剖部位分区矩阵列表 */
+    .anatomy-dir-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .anatomy-dir-btn {
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(253, 164, 175, 0.16);
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #e2e8f0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+    .anatomy-dir-btn:hover {
+      background: rgba(244, 63, 94, 0.22);
+      border-color: var(--ruby);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+    .anatomy-dir-btn.active {
+      background: linear-gradient(135deg, rgba(225, 29, 72, 0.55), rgba(190, 18, 60, 0.45));
+      border-color: #f43f5e;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 14px rgba(225, 29, 72, 0.5);
+    }
+
+    /* 生理流体与血液循环调控舱 */
+    .circulation-panel {
+      background: var(--card-bg);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .panel-header-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--subtext);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: #f1f5f9;
-      margin-bottom: 8px;
-    }
-    .speed-badge {
-      font-size: 12px;
-      font-weight: 800;
-      color: var(--gold);
-      background: rgba(251, 191, 36, 0.15);
-      padding: 2px 8px;
-      border-radius: 5px;
-      border: 1px solid rgba(251, 191, 36, 0.25);
-    }
-    .speed-slider {
-      width: 100%;
-      height: 5px;
-      border-radius: 3px;
-      background: rgba(255, 255, 255, 0.15);
-      outline: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-    }
-    .speed-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--gold);
-      box-shadow: 0 0 10px var(--gold);
-      cursor: pointer;
     }
     .speed-btn-row {
       display: flex;
-      gap: 6px;
-      margin-top: 10px;
+      gap: 5px;
     }
     .speed-pill-btn {
       flex: 1;
       padding: 5px 0;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 7px;
+      border-radius: 6px;
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       cursor: pointer;
       text-align: center;
@@ -244,71 +264,39 @@
       color: var(--gold);
       font-weight: 800;
     }
-
-    /* 6 大解剖跳转芯片 */
-    .jump-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .jump-btn {
-      padding: 9px 10px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(253, 164, 175, 0.18);
-      border-radius: 9px;
-      font-size: 11px;
-      font-weight: 600;
-      color: #e2e8f0;
+    .speed-slider {
+      width: 100%;
+      height: 4px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+      -webkit-appearance: none;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      text-align: left;
     }
-    .jump-btn:hover {
-      background: rgba(244, 63, 94, 0.22);
-      border-color: var(--ruby);
-      color: #fff;
-      transform: translateY(-1px);
+    .speed-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 10px var(--gold);
+      cursor: pointer;
     }
-    .jump-btn.active {
-      background: linear-gradient(135deg, rgba(225, 29, 72, 0.5), rgba(190, 18, 60, 0.4));
-      border-color: #f43f5e;
-      color: #fff;
-      font-weight: 700;
-      box-shadow: 0 0 12px rgba(225, 29, 72, 0.4);
-    }
-
-    /* 生理遥测参数与控制滑块 */
-    .metrics-box {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      background: rgba(0, 0, 0, 0.45);
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .metric-col { display: flex; flex-direction: column; }
-    .metric-k { font-size: 10px; color: var(--subtext); text-transform: uppercase; }
-    .metric-v { font-size: 16px; font-weight: 800; color: #fff; margin-top: 2px; }
-    .metric-u { font-size: 11px; color: var(--ruby); margin-left: 3px; font-weight: 400; }
 
     .slider-row {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 4px;
     }
     .slider-row-header {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--muted);
     }
     .base-slider {
       width: 100%;
-      height: 5px;
+      height: 4px;
       border-radius: 3px;
       background: rgba(255, 255, 255, 0.15);
       outline: none;
@@ -317,29 +305,28 @@
     }
     .base-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 15px;
-      height: 15px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       background: var(--ruby);
       box-shadow: 0 0 10px var(--ruby);
       cursor: pointer;
     }
 
-    /* 播放/暂停及音效按钮 */
     .action-btn-row {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-top: auto;
-      padding-top: 6px;
+      padding-top: 4px;
     }
     .action-sub-btn {
       flex: 1;
-      padding: 10px 0;
+      padding: 9px 0;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--panel-border);
-      border-radius: 10px;
+      border-radius: 8px;
       color: #fff;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       cursor: pointer;
       text-align: center;
@@ -351,7 +338,7 @@
     }
 
     /* =========================================================================
-       2. 中间核心大画面：巨幅人体透视模型 (Center Column: 饱满居中，顶天立地)
+       2. 中间核心大画面：巨幅人体透视模型 (Center Column: 饱满大画面)
        ========================================================================= */
     .center-macro-stage {
       flex: 1;
@@ -365,7 +352,6 @@
       background: radial-gradient(circle at 50% 50%, rgba(225, 29, 72, 0.12) 0%, rgba(14, 5, 11, 0.05) 50%, transparent 80%);
     }
 
-    /* 科技感全息深度圆环与背景辅助网格，烘托饱满空间氛围 */
     .center-macro-stage::before {
       content: "";
       position: absolute;
@@ -385,7 +371,6 @@
       border: 1px solid rgba(6, 182, 212, 0.08);
       pointer-events: none;
     }
-
     @keyframes rotateRadar {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
@@ -404,7 +389,6 @@
       z-index: 5;
     }
 
-    /* 巨幅人体透视模型底图 */
     #giant-human-img {
       width: 100%;
       height: 100%;
@@ -415,7 +399,6 @@
       pointer-events: none;
     }
 
-    /* 心脏搏动背光光晕 */
     .cardiac-pulse-glow {
       position: absolute;
       top: 50%;
@@ -431,7 +414,6 @@
       transition: transform 0.1s ease, opacity 0.1s ease;
     }
 
-    /* 叠置在巨大人体上的 SVG 真实血液流动管网与发光流体 (500x500 绝对坐标映射) */
     #giant-circulation-svg {
       position: absolute;
       inset: 0;
@@ -441,7 +423,7 @@
       z-index: 5;
     }
 
-    /* 动态医学引线标牌 (清晰标注各个流经部位) */
+    /* 动态医学引线与交互热点标牌 */
     .macro-pin-badge {
       position: absolute;
       background: rgba(16, 7, 14, 0.92);
@@ -464,67 +446,69 @@
       transform: scale(1.08);
       background: rgba(244, 63, 94, 0.35);
     }
-    .macro-pin-badge.active-red {
+    .macro-pin-badge.active {
       border-color: var(--ruby);
-      background: linear-gradient(135deg, rgba(225, 29, 72, 0.7), rgba(190, 18, 60, 0.55));
+      background: linear-gradient(135deg, rgba(225, 29, 72, 0.75), rgba(190, 18, 60, 0.6));
       color: #fff;
       font-weight: 700;
       box-shadow: 0 0 25px rgba(225, 29, 72, 0.9);
-      transform: scale(1.12);
+      transform: scale(1.14);
     }
-    .macro-pin-badge.active-blue {
-      border-color: var(--holo-cyan);
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.7), rgba(14, 116, 144, 0.55));
-      color: #fff;
-      font-weight: 700;
-      box-shadow: 0 0 25px rgba(6, 182, 212, 0.9);
-      transform: scale(1.12);
+    .macro-pin-badge.dimmed {
+      opacity: 0.3;
+      transform: scale(0.95);
+      pointer-events: none;
     }
     .pin-cn { font-size: 12px; font-weight: 800; display: flex; align-items: center; gap: 5px; }
     .pin-en { font-size: 10px; color: rgba(255, 255, 255, 0.7); margin-top: 1px; }
 
     /* =========================================================================
-       3. 右侧拟真微观血液流动视窗 (Right Column: 28vw~30vw / 400px-520px 宽幅巨幕)
+       3. 右侧局部放大与多层深度解说视窗 (Right Column: 28vw~30vw 宽幅巨幕)
        ========================================================================= */
     .right-micro-stage {
-      width: clamp(400px, 28vw, 520px);
+      width: clamp(420px, 29vw, 540px);
       height: 100%;
-      padding: 84px 18px 18px 18px;
+      padding: 78px 16px 14px 16px;
       display: flex;
       flex-direction: column;
+      gap: 12px;
       z-index: 15;
       background: linear-gradient(270deg, rgba(16, 8, 15, 0.96) 0%, rgba(14, 7, 13, 0.88) 100%);
       border-left: 1px solid var(--panel-border);
       backdrop-filter: blur(24px);
       box-shadow: -18px 0 40px rgba(0, 0, 0, 0.65);
       flex-shrink: 0;
+      overflow: hidden;
     }
 
     .micro-viewport-card {
-      flex: 1;
+      height: 38vh;
+      min-height: 250px;
+      max-height: 360px;
       width: 100%;
       position: relative;
-      border-radius: 18px;
+      border-radius: 16px;
       overflow: hidden;
       border: 1px solid rgba(244, 63, 94, 0.4);
       background: #060104;
       box-shadow: inset 0 0 35px rgba(244, 63, 94, 0.25), 0 12px 35px rgba(0, 0, 0, 0.85);
       display: flex;
       flex-direction: column;
+      flex-shrink: 0;
     }
 
     .micro-viewport-header {
       position: absolute;
-      top: 12px;
-      left: 14px;
-      right: 14px;
+      top: 10px;
+      left: 12px;
+      right: 12px;
       z-index: 10;
       display: flex;
       justify-content: space-between;
       align-items: center;
       background: rgba(12, 5, 10, 0.88);
       backdrop-filter: blur(12px);
-      padding: 8px 12px;
+      padding: 6px 12px;
       border-radius: 10px;
       border: 1px solid rgba(255, 255, 255, 0.15);
       pointer-events: none;
@@ -544,10 +528,36 @@
       background: var(--ruby);
       box-shadow: 0 0 10px var(--ruby);
     }
-    .micro-sub-label {
-      font-size: 11px;
-      color: var(--gold);
-      font-weight: 600;
+
+    .view-level-toggle {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 20px;
+      padding: 2px 4px;
+      pointer-events: auto;
+    }
+    .view-level-btn {
+      padding: 3px 9px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      background: transparent;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .view-level-btn:hover {
+      color: #fff;
+    }
+    .view-level-btn.active {
+      background: var(--ruby);
+      color: #fff;
+      box-shadow: 0 0 8px var(--ruby);
     }
 
     #webgl-canvas-container {
@@ -556,30 +566,29 @@
       position: relative;
     }
 
-    /* 右侧微观视窗底部悬浮信息 */
     .micro-bottom-hud {
       position: absolute;
-      bottom: 14px;
-      left: 14px;
-      right: 14px;
+      bottom: 10px;
+      left: 12px;
+      right: 12px;
       z-index: 10;
       background: rgba(12, 5, 10, 0.88);
       backdrop-filter: blur(14px);
-      padding: 10px 14px;
-      border-radius: 12px;
+      padding: 8px 12px;
+      border-radius: 10px;
       border: 1px solid rgba(244, 63, 94, 0.35);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
+      font-size: 11px;
     }
     .micro-view-toggle {
-      padding: 6px 12px;
+      padding: 5px 10px;
       background: rgba(244, 63, 94, 0.22);
       border: 1px solid var(--ruby);
-      border-radius: 8px;
+      border-radius: 6px;
       color: #fff;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.2s;
@@ -587,6 +596,90 @@
     .micro-view-toggle:hover {
       background: rgba(244, 63, 94, 0.45);
       transform: translateY(-1px);
+    }
+
+    /* 局部解剖与多维科学解说档案卡 */
+    .detail-dossier-card {
+      flex: 1;
+      width: 100%;
+      background: rgba(18, 9, 16, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      padding: 14px 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(16px);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .detail-dossier-card::-webkit-scrollbar { width: 4px; }
+    .detail-dossier-card::-webkit-scrollbar-thumb { background: rgba(244, 63, 94, 0.35); border-radius: 4px; }
+
+    .dossier-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+    }
+    .dossier-title-main {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+    }
+    .dossier-title-en {
+      font-size: 10px;
+      color: var(--subtext);
+      margin-top: 2px;
+    }
+    .dossier-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .dossier-metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .dossier-metric-k { font-size: 10px; color: var(--subtext); }
+    .dossier-metric-v { font-size: 15px; font-weight: 800; color: #fff; margin-top: 1px; }
+    .dossier-metric-u { font-size: 10px; color: var(--ruby); margin-left: 2px; font-weight: normal; }
+
+    .dossier-block {
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--ruby);
+      border-radius: 0 8px 8px 0;
+      padding: 8px 12px;
+    }
+    .dossier-block.cyan { border-left-color: var(--holo-cyan); }
+    .dossier-block.gold { border-left-color: var(--gold); }
+    .dossier-block.blue { border-left-color: var(--venous); }
+    .dossier-block.emerald { border-left-color: var(--emerald); }
+    .dossier-block.purple { border-left-color: var(--purple); }
+
+    .dossier-block-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 4px;
+    }
+    .dossier-block-text {
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.6;
     }
 
     /* 启动蒙层 */
@@ -640,105 +733,119 @@
     <header class="top-header">
       <div class="brand-group">
         <div class="brand-tag">Bio Spatial Learning · 具身生命剧场</div>
-        <h1 class="brand-title">一滴血的旅行</h1>
-        <div class="brand-desc">中央巨幅人体透视模型 · 真实双循环动线追踪 · 1/4 微观红细胞视窗</div>
+        <h1 class="brand-title">全息人体生命图谱</h1>
+        <div class="brand-desc">78 种主要器官 · 206 块骨骼 · 37 万亿细胞 ｜ 点击局部放大与微观特写解说</div>
       </div>
     </header>
 
     <!-- =========================================================================
-         1. 左侧控制导航座舱 (Left Column: ~290px)
+         1. 左侧控制导航座舱 (Left Column: 350px - 420px 宽幅)
          ========================================================================= -->
     <aside class="left-sidebar">
-      <!-- 当前血液流经部位大字指示卡 -->
-      <div class="status-card">
-        <div class="status-card-header">
-          <span class="status-card-title">当前血液所处部位</span>
-          <span class="blood-type-tag venous" id="hud-blood-tag">缺氧静脉血</span>
+      <!-- 人体多维宏观与微观谱系全景统计 -->
+      <div class="stats-strip">
+        <div>
+          <div class="stat-item-num">78<span>种</span></div>
+          <div class="stat-item-label">主要器官</div>
         </div>
-        <div class="site-main-text" id="hud-site-title">① 右心室 ➔ 肺动脉干</div>
-        <div class="site-desc-text" id="hud-site-desc">
-          收缩期心肌猛烈收缩，脱氧静脉血由右心室喷入肺动脉干，奔向左右双肺。
+        <div>
+          <div class="stat-item-num">206<span>块</span></div>
+          <div class="stat-item-label">骨骼架构</div>
         </div>
-      </div>
-
-      <!-- 流动速度放慢控制器 (支持慢动作清晰观察) -->
-      <div class="speed-control-card">
-        <div class="speed-row-header">
-          <span>血液流动速度 (可放慢观察)</span>
-          <span class="speed-badge" id="speed-badge">0.5x 慢放</span>
+        <div>
+          <div class="stat-item-num">37<span>万亿</span></div>
+          <div class="stat-item-label">细胞总数</div>
         </div>
-        <input type="range" class="speed-slider" id="slider-speed" min="0.1" max="1.5" step="0.05" value="0.5" oninput="updateSpeed(this.value)">
-        <div class="speed-btn-row">
-          <button class="speed-pill-btn" onclick="setSpeedPreset(0.2, '0.2x 极慢')">0.2x 极慢</button>
-          <button class="speed-pill-btn active" id="btn-speed-05" onclick="setSpeedPreset(0.5, '0.5x 慢放')">0.5x 慢放</button>
-          <button class="speed-pill-btn" onclick="setSpeedPreset(1.0, '1.0x 正常')">1.0x 正常</button>
-          <button class="speed-pill-btn" onclick="setSpeedPreset(1.5, '1.5x 加速')">1.5x 加速</button>
+        <div>
+          <div class="stat-item-num">4<span>大类</span></div>
+          <div class="stat-item-label">基础组织</div>
         </div>
       </div>
 
-      <!-- 6 大解剖跳转芯片 -->
+      <!-- 分类切换标签栏 -->
+      <div class="category-tab-bar">
+        <button class="category-tab active" id="tab-all" onclick="setCategoryFilter('all')">🌐 全身</button>
+        <button class="category-tab" id="tab-organ" onclick="setCategoryFilter('organ')">🫀 器官</button>
+        <button class="category-tab" id="tab-skeletal" onclick="setCategoryFilter('skeletal')">🦴 骨骼</button>
+        <button class="category-tab" id="tab-cells" onclick="setCategoryFilter('cells')">🔬 细胞组织</button>
+        <button class="category-tab" id="tab-circulation" onclick="setCategoryFilter('circulation')">🩸 血液循环</button>
+      </div>
+
+      <!-- 解剖区域快速穿越矩阵 -->
       <div>
-        <div style="font-size: 11px; font-weight: 700; color: var(--subtext); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.05em;">点击瞬间穿越解剖位点</div>
-        <div class="jump-grid">
-          <button class="jump-btn active" id="btn-chip-0" onclick="jumpToAnatomy(0.02, 'btn-chip-0')">
-            <span>🫀</span><span>右心室 (起跑)</span>
+        <div style="font-size: 11px; font-weight: 700; color: var(--subtext); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">解剖位点速选与放大</div>
+        <div class="anatomy-dir-grid" id="anatomy-dir-grid">
+          <button class="anatomy-dir-btn active" id="dir-btn-heart" onclick="selectAnatomy('heart')">
+            <span>🫀</span><span>心脏与心肌</span>
           </button>
-          <button class="jump-btn" id="btn-chip-1" onclick="jumpToAnatomy(0.24, 'btn-chip-1')">
-            <span>🫁</span><span>肺泡微血管 (气体交换)</span>
+          <button class="anatomy-dir-btn" id="dir-btn-brain" onclick="selectAnatomy('brain')">
+            <span>🧠</span><span>大脑与颅骨</span>
           </button>
-          <button class="jump-btn" id="btn-chip-2" onclick="jumpToAnatomy(0.48, 'btn-chip-2')">
-            <span>❤️</span><span>左心室 (高压泵血)</span>
+          <button class="anatomy-dir-btn" id="dir-btn-lung" onclick="selectAnatomy('lung')">
+            <span>🫁</span><span>双肺与肺泡</span>
           </button>
-          <button class="jump-btn" id="btn-chip-3" onclick="jumpToAnatomy(0.68, 'btn-chip-3')">
-            <span>🧠</span><span>脑部中枢毛细血管</span>
+          <button class="anatomy-dir-btn" id="dir-btn-spine" onclick="selectAnatomy('spine')">
+            <span>🦴</span><span>脊柱与骨髓</span>
           </button>
-          <button class="jump-btn" id="btn-chip-4" onclick="jumpToAnatomy(0.85, 'btn-chip-4')">
-            <span>🩸</span><span>腹腔与下肢外周毛细</span>
+          <button class="anatomy-dir-btn" id="dir-btn-liver" onclick="selectAnatomy('liver')">
+            <span>🧪</span><span>肝脏与胃肠</span>
           </button>
-          <button class="jump-btn" id="btn-chip-5" onclick="jumpToAnatomy(0.96, 'btn-chip-5')">
-            <span>🔄</span><span>腔静脉 (回流右心房)</span>
+          <button class="anatomy-dir-btn" id="dir-btn-kidney" onclick="selectAnatomy('kidney')">
+            <span>💧</span><span>双肾与肾单位</span>
+          </button>
+          <button class="anatomy-dir-btn" id="dir-btn-pelvis" onclick="selectAnatomy('pelvis')">
+            <span>🦴</span><span>骨盆与外周</span>
+          </button>
+          <button class="anatomy-dir-btn" id="dir-btn-circulation" onclick="selectAnatomy('circulation')">
+            <span>🔄</span><span>双循环动线</span>
           </button>
         </div>
       </div>
 
-      <!-- 实时流体参数 -->
-      <div class="metrics-box">
-        <div class="metric-col">
-          <span class="metric-k">瞬间血流速度</span>
-          <span class="metric-v" id="val-speed">192<span class="metric-u">mm/s</span></span>
+      <!-- 生理流体与血液循环调控舱 -->
+      <div class="circulation-panel">
+        <div class="panel-header-title">
+          <span>血液双循环调控</span>
+          <span class="dossier-badge" id="hud-blood-badge" style="background: rgba(225,29,72,0.3); color: #ffe4e6;">体循环射血</span>
         </div>
-        <div class="metric-col">
-          <span class="metric-k">红细胞剪切应力</span>
-          <span class="metric-v" id="val-shear">2.4<span class="metric-u">Pa</span></span>
+
+        <div style="font-size: 11px; color: #fff; font-weight: 700;" id="hud-circ-site">④ 主动脉弓 ➔ 脑部中枢</div>
+
+        <!-- 速度调节器 -->
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 4px;">
+            <span>血流速度 (慢动作观察)</span>
+            <span style="color: var(--gold); font-weight: 700;" id="speed-badge">0.5x 慢放</span>
+          </div>
+          <input type="range" class="speed-slider" id="slider-speed" min="0.1" max="1.5" step="0.05" value="0.5" oninput="updateSpeed(this.value)">
+          <div class="speed-btn-row" style="margin-top: 6px;">
+            <button class="speed-pill-btn" onclick="setSpeedPreset(0.2, '0.2x 极慢')">0.2x 极慢</button>
+            <button class="speed-pill-btn active" id="btn-speed-05" onclick="setSpeedPreset(0.5, '0.5x 慢放')">0.5x 慢放</button>
+            <button class="speed-pill-btn" onclick="setSpeedPreset(1.0, '1.0x 正常')">1.0x 正常</button>
+            <button class="speed-pill-btn" onclick="setSpeedPreset(1.5, '1.5x 加速')">1.5x 加速</button>
+          </div>
         </div>
-        <div class="metric-col">
-          <span class="metric-k">平均循环周期</span>
-          <span class="metric-v">24.5<span class="metric-u">秒/周</span></span>
+
+        <!-- 心率滑块 -->
+        <div class="slider-row">
+          <div class="slider-row-header">
+            <span>心搏频率 (BPM)</span>
+            <span id="val-bpm" style="font-weight: 700; color: #fff;">75 次/分</span>
+          </div>
+          <input type="range" class="base-slider" id="slider-bpm" min="45" max="160" value="75" oninput="updateBPM(this.value)">
         </div>
-        <div class="metric-col">
-          <span class="metric-k">红细胞形变比</span>
-          <span class="metric-v" id="val-deform">1.38<span class="metric-u">伸长比</span></span>
+
+        <!-- 血氧滑块 -->
+        <div class="slider-row">
+          <div class="slider-row-header">
+            <span>血氧饱和度 (SpO₂)</span>
+            <span id="val-spo2" style="font-weight: 700; color: #f43f5e;">98 %</span>
+          </div>
+          <input type="range" class="base-slider" id="slider-spo2" min="30" max="100" value="98" oninput="updateSpO2(this.value)">
         </div>
       </div>
 
-      <!-- 心律与血氧滑块 -->
-      <div class="slider-row">
-        <div class="slider-row-header">
-          <span>心搏频率 (BPM)</span>
-          <span id="val-bpm" style="font-weight: 700; color: #fff;">75 次/分</span>
-        </div>
-        <input type="range" class="base-slider" id="slider-bpm" min="45" max="160" value="75" oninput="updateBPM(this.value)">
-      </div>
-
-      <div class="slider-row">
-        <div class="slider-row-header">
-          <span>血氧饱和度 (SpO₂)</span>
-          <span id="val-spo2" style="font-weight: 700; color: #f43f5e;">98 %</span>
-        </div>
-        <input type="range" class="base-slider" id="slider-spo2" min="30" max="100" value="98" oninput="updateSpO2(this.value)">
-      </div>
-
-      <!-- 播放/暂停与声音切换 -->
+      <!-- 播放/暂停及音效按钮 -->
       <div class="action-btn-row">
         <button class="action-sub-btn" id="btn-play-pause" onclick="togglePlayPause()">⏸️ 暂停动画</button>
         <button class="action-sub-btn" id="btn-audio-toggle" onclick="toggleAudio()">🔊 心音: 开</button>
@@ -746,7 +853,7 @@
     </aside>
 
     <!-- =========================================================================
-         2. 中间主图：巨大人体透视模型 (Center Column: 饱满大画面)
+         2. 中间核心大画面：巨大人体透视模型 (Center Column: 饱满大画面)
          ========================================================================= -->
     <main class="center-macro-stage">
       <div class="macro-display-box">
@@ -756,7 +863,7 @@
         <!-- 巨大人体 3D 骨骼透视底图 (高清透明) -->
         <img id="giant-human-img" src="assets/anatomy_3d_cutout.png" alt="Giant Human Anatomy Model" onerror="this.src='assets/anatomy_torso_3d.png'">
 
-        <!-- 叠置在巨大人体上的 SVG 真实血液流动管网与动态引线标注 (500x500 绝对坐标系统) -->
+        <!-- 叠置在巨大人体上的 SVG 真实血液流动管网、激光引线与动态热点靶心 (500x500 绝对坐标映射) -->
         <svg id="giant-circulation-svg" viewBox="0 0 500 500">
           <defs>
             <filter id="blood-glow" x="-50%" y="-50%" width="200%" height="200%">
@@ -778,7 +885,7 @@
             </linearGradient>
           </defs>
 
-          <!-- 真实动静脉背景持续微流动虚线 (展示血流持续单向冲刷，约束在人体解剖轮廓内) -->
+          <!-- 真实动静脉背景持续微流动虚线 -->
           <path d="M 238 220 Q 215 160 170 160 M 238 220 Q 260 160 285 160"
                 fill="none" stroke="#60a5fa" stroke-width="2.5" stroke-dasharray="5 5" opacity="0.65"/>
           <path d="M 255 220 Q 248 135 242 85 Q 238 45 240 28 M 255 220 L 254 360 L 252 460"
@@ -802,93 +909,88 @@
                    C 236 235, 238 228, 238 225 Z"
                 fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5" stroke-dasharray="4 4"/>
 
-          <!-- 医学动态引线 (Leader Lines) 连向解剖标牌，配有锚点光斑 -->
-          <g id="giant-leader-lines" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-dasharray="3 3">
-            <circle cx="232" cy="175" r="3.5" fill="#38bdf8"/>
-            <line id="line-pa" x1="232" y1="175" x2="85" y2="145"/>
-            <circle cx="85" cy="145" r="2.5" fill="#38bdf8"/>
-
-            <circle cx="165" cy="205" r="3.5" fill="#f43f5e"/>
-            <line id="line-lung" x1="165" y1="205" x2="55" y2="215"/>
-            <circle cx="55" cy="215" r="2.5" fill="#f43f5e"/>
-
-            <circle cx="248" cy="135" r="3.5" fill="#f43f5e"/>
-            <line id="line-aorta" x1="248" y1="135" x2="415" y2="120"/>
-            <circle cx="415" cy="120" r="2.5" fill="#f43f5e"/>
-
-            <circle cx="266" cy="255" r="3.5" fill="#f43f5e"/>
-            <line id="line-lv" x1="266" y1="255" x2="420" y2="245"/>
-            <circle cx="420" cy="245" r="2.5" fill="#f43f5e"/>
-
-            <circle cx="254" cy="355" r="3.5" fill="#38bdf8"/>
-            <line id="line-daorta" x1="254" y1="355" x2="415" y2="355"/>
-            <circle cx="415" cy="355" r="2.5" fill="#38bdf8"/>
-
-            <circle cx="236" cy="370" r="3.5" fill="#38bdf8"/>
-            <line id="line-ivc" x1="236" y1="370" x2="85" y2="380"/>
-            <circle cx="85" cy="380" r="2.5" fill="#38bdf8"/>
-          </g>
-
-          <!-- 真实血液流动主导波团与高能红细胞追踪标靶 (Traveling Blood Bolus) -->
+          <!-- 真实血液流动主导波团与高能红细胞追踪标靶 -->
           <g id="blood-bolus-tracer" transform="translate(238, 225)">
-            <!-- 扩散声纳波环 -->
             <circle r="16" fill="none" stroke="#f43f5e" stroke-width="1.5" opacity="0.85">
               <animate attributeName="r" values="6;28;6" dur="1.2s" repeatCount="indefinite"/>
               <animate attributeName="opacity" values="0.95;0.05;0.95" dur="1.2s" repeatCount="indefinite"/>
             </circle>
-            <!-- 核心高能血流质点 -->
             <circle id="tracer-core" r="7" fill="#f43f5e" filter="url(#blood-glow)"/>
-            <!-- 运动切线方向箭头 -->
             <line id="tracer-dir" x1="0" y1="0" x2="0" y2="-12" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </g>
+
+          <!-- 激光瞄准锁定引线：从选中的器官连至右侧视窗 -->
+          <line id="laser-beam" x1="260" y1="235" x2="495" y2="235" stroke="#f43f5e" stroke-width="2" stroke-dasharray="6 4" opacity="0.85"/>
+
+          <!-- 动态器官瞄准靶心环 -->
+          <g id="organ-reticle" transform="translate(260, 235)">
+            <circle r="22" fill="none" stroke="#f43f5e" stroke-width="1.8" opacity="0.85">
+              <animate attributeName="r" values="14;28;14" dur="1.8s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values="0.9;0.1;0.9" dur="1.8s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="4.5" fill="#f43f5e"/>
+            <path d="M -8 -22 L 8 -22 M -8 22 L 8 22 M -22 -8 L -22 8 M 22 -8 L 22 8" stroke="#fff" stroke-width="1.5" opacity="0.7"/>
           </g>
         </svg>
 
-        <!-- 6 组动态医学引线标牌 (清晰标注各个流经部位) -->
-        <div class="macro-pin-badge" id="pin-pa" style="top: 26%; left: 1%;" onclick="jumpToAnatomy(0.12, 'btn-chip-0')">
-          <span class="pin-cn">① 肺动脉干</span>
-          <span class="pin-en">Pulmonary Artery</span>
+        <!-- 8 组人体解剖分区交互标牌 -->
+        <div class="macro-pin-badge" id="pin-brain" data-category="organ" style="top: 13%; left: 32%;" onclick="selectAnatomy('brain')">
+          <span class="pin-cn">🧠 大脑中枢与颅骨</span>
+          <span class="pin-en">Brain & Cranium (860亿神经元)</span>
         </div>
 
-        <div class="macro-pin-badge" id="pin-lung" style="top: 40%; left: -6%;" onclick="jumpToAnatomy(0.24, 'btn-chip-1')">
-          <span class="pin-cn">② 肺泡微血管 (气体交换)</span>
-          <span class="pin-en">Pulmonary Capillaries (O₂ IN)</span>
+        <div class="macro-pin-badge active" id="pin-heart" data-category="organ" style="top: 36%; right: 1%;" onclick="selectAnatomy('heart')">
+          <span class="pin-cn">🫀 心脏动力引擎</span>
+          <span class="pin-en">Heart & Coronary Vessels (10万次/天)</span>
         </div>
 
-        <div class="macro-pin-badge" id="pin-aorta" style="top: 21%; right: 1%;" onclick="jumpToAnatomy(0.58, 'btn-chip-2')">
-          <span class="pin-cn">③ 主动脉弓</span>
-          <span class="pin-en">Aortic Arch</span>
+        <div class="macro-pin-badge" id="pin-lung" data-category="organ" style="top: 36%; left: -6%;" onclick="selectAnatomy('lung')">
+          <span class="pin-cn">🫁 双肺与肺泡网络</span>
+          <span class="pin-en">Lungs & Alveoli (3亿肺泡换气)</span>
         </div>
 
-        <div class="macro-pin-badge" id="pin-lv" style="top: 46%; right: 0%;" onclick="jumpToAnatomy(0.48, 'btn-chip-2')">
-          <span class="pin-cn">④ 左心室 (高压射血)</span>
-          <span class="pin-en">Left Ventricle</span>
+        <div class="macro-pin-badge" id="pin-spine" data-category="skeletal" style="top: 48%; left: 33%;" onclick="selectAnatomy('spine')">
+          <span class="pin-cn">🦴 脊柱中轴与骨髓</span>
+          <span class="pin-en">Spine & Bone Marrow (206骨/造血)</span>
         </div>
 
-        <div class="macro-pin-badge" id="pin-daorta" style="top: 68%; right: 1%;" onclick="jumpToAnatomy(0.85, 'btn-chip-4')">
-          <span class="pin-cn">⑤ 降主动脉 (全身供氧)</span>
-          <span class="pin-en">Descending Aorta</span>
+        <div class="macro-pin-badge" id="pin-liver" data-category="organ" style="top: 55%; left: 1%;" onclick="selectAnatomy('liver')">
+          <span class="pin-cn">🧪 肝脏生化中枢</span>
+          <span class="pin-en">Liver & Lobules (500+生化功能)</span>
         </div>
 
-        <div class="macro-pin-badge" id="pin-ivc" style="top: 73%; left: 2%;" onclick="jumpToAnatomy(0.96, 'btn-chip-5')">
-          <span class="pin-cn">⑥ 下腔静脉 (回流右心)</span>
-          <span class="pin-en">Inferior Vena Cava</span>
+        <div class="macro-pin-badge" id="pin-kidney" data-category="organ" style="top: 62%; right: 1%;" onclick="selectAnatomy('kidney')">
+          <span class="pin-cn">💧 双肾与肾单位</span>
+          <span class="pin-en">Kidneys & Nephrons (180L原尿/天)</span>
+        </div>
+
+        <div class="macro-pin-badge" id="pin-pelvis" data-category="skeletal" style="top: 76%; left: 34%;" onclick="selectAnatomy('pelvis')">
+          <span class="pin-cn">🦴 骨盆带与微循环</span>
+          <span class="pin-en">Pelvis & Peripheral Vasculature</span>
+        </div>
+
+        <div class="macro-pin-badge" id="pin-circulation" data-category="circulation" style="top: 76%; right: 2%;" onclick="selectAnatomy('circulation')">
+          <span class="pin-cn">🩸 双循环血流闭环</span>
+          <span class="pin-en">Closed-loop Circulation (10万km)</span>
         </div>
       </div>
     </main>
 
     <!-- =========================================================================
-         3. 右侧 1/4 拟真微观血液流动视窗 (Right Column: 25% 页面宽度)
-         ========================================================================= */
-    -->
+         3. 右侧局部放大与多层深度解说视窗 (Right Column: 28vw~30vw 宽幅巨幕)
+         ========================================================================= -->
     <aside class="right-micro-stage">
+      <!-- 3D 局部放大视窗卡片 -->
       <div class="micro-viewport-card">
-        <!-- 视窗顶部标签 -->
         <div class="micro-viewport-header">
           <div class="micro-tag">
             <div class="micro-tag-dot"></div>
-            <span>🔬 实时微观流体视窗</span>
+            <span id="viewport-organ-title">🫀 心脏 · 冠状动脉与心肌微观</span>
           </div>
-          <span class="micro-sub-label">1/4 局部红细胞特写</span>
+          <div class="view-level-toggle">
+            <button class="view-level-btn active" id="btn-view-macro" onclick="setViewLevel('macro')">🔍 宏观 3D 器官</button>
+            <button class="view-level-btn" id="btn-view-micro" onclick="setViewLevel('micro')">🔬 微观 3D 细胞</button>
+          </div>
         </div>
 
         <!-- 独立的 3D WebGL 画布容器 -->
@@ -896,16 +998,20 @@
           <canvas id="webgl-canvas"></canvas>
         </div>
 
-        <!-- 视窗底部信息与交互按钮 -->
         <div class="micro-bottom-hud">
           <div>
-            <div style="font-weight: 700; color: #fff;" id="micro-state-text">红细胞正在翻滚冲刺</div>
-            <div style="font-size: 9px; color: var(--subtext);">双凹圆盘受血流剪切力形变</div>
+            <div style="font-weight: 700; color: #fff;" id="micro-state-text">心脏自主舒缩 · 泵送生命之血</div>
+            <div style="font-size: 9px; color: var(--subtext);" id="micro-state-sub">🖱️ 可 360° 拖拽旋转 · 滚轮缩放查看结构</div>
           </div>
-          <button class="micro-view-toggle" id="btn-camera-toggle" onclick="toggleCameraMode()">
-            🔄 切换视角
+          <button class="micro-view-toggle" id="btn-camera-toggle" onclick="reset3DCamera()">
+            🎯 重置视角
           </button>
         </div>
+      </div>
+
+      <!-- 局部解剖与多维科学解说档案卡 -->
+      <div class="detail-dossier-card" id="detail-dossier-card">
+        <!-- 动态由 JavaScript 填充 -->
       </div>
     </aside>
   </div>
@@ -915,28 +1021,221 @@
     <div class="start-circle">
       <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
     </div>
-    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">点击进入人体血液微观世界</h2>
-    <p style="font-size: 13px; color: #fda4af;">巨大人体透视模型 · 真实双循环流向 · 1/4 微观血液特写</p>
+    <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">点击开启人体生命全息探索</h2>
+    <p style="font-size: 13px; color: #fda4af;">78 种主要器官 · 206 块骨骼 · 37 万亿细胞 ｜ 一滴血的双循环旅行与局部微观放大</p>
   </div>
 
   <script>
     /* =========================================================================
-       1. 生理参数与状态控制
+       1. 全身器官、骨骼、组织、细胞医学全景数据库
+       ========================================================================= */
+    const ANATOMY_DATABASE = {
+      heart: {
+        id: "heart",
+        category: "organ",
+        titleCn: "心脏 · 生命引擎与双循环动力泵",
+        titleEn: "The Human Heart · Cardiovascular Central Pump",
+        badge: "循环系统中枢",
+        sceneKey: "heart",
+        icon: "🫀",
+        reticleCoords: { x: 260, y: 235 },
+        stats: [
+          { label: "平均净重", val: "250 - 350", unit: "g" },
+          { label: "日跳动次数", val: "约 10 万", unit: "次/天" },
+          { label: "日泵血总量", val: "约 7,500", unit: "升" },
+          { label: "心肌细胞能耗", val: "40%", unit: "线粒体体积" }
+        ],
+        sections: {
+          anatomy: "四腔心结构（左/右心房与左/右心室），左心室肌壁厚度为右心室的 3 倍，以维持 120mmHg 的体循环射血高压。房室瓣与半月瓣借由腱索与乳头肌严丝合缝协同工作，确保血流绝对单向推进。",
+          skeletal: "位于中纵隔内，正前方受胸骨柄、胸骨体与第 2 至第 6 肋软骨构成的坚固骨性胸廓庇护；后方紧贴第 5 至第 8 胸椎，下方借心包牢固锚定于坚韧的膈肌中心腱上。",
+          histology: "由心内膜、心肌层与心外膜三层构成。心肌纤维呈分叉网状排列，富含特化闰盘（Intercalated Discs），内含大量缝隙连接（Gap Junctions），使数十亿心肌细胞如同一枚巨大的单一细胞协同电化学收缩（功能合胞体）。",
+          cells: "包含自律性窦房结/房室结起搏细胞（产生动作电位）、心房与心室工作心肌细胞（富含肌原纤维与肌钙蛋白）、心内膜单层内皮细胞、成纤维细胞及心脏特有巨噬细胞。成年人心肌细胞几乎不再分裂。",
+          facts: "心脏拥有独立的电生理传导起搏系统，即使脱离人体，只要维持适宜氧供和温度，仍能自主搏动；人在一生中心脏跳动超过 25 亿次，所做机械功足以将一艘万吨巨轮举升出海面！"
+        }
+      },
+      brain: {
+        id: "brain",
+        category: "organ",
+        titleCn: "大脑中枢 · 意识与神经调控司令部",
+        titleEn: "Human Brain & Central Nervous System",
+        badge: "神经系统中枢",
+        sceneKey: "brain",
+        icon: "🧠",
+        reticleCoords: { x: 250, y: 55 },
+        stats: [
+          { label: "平均脑重量", val: "约 1.4", unit: "kg (~2%体重)" },
+          { label: "氧耗/能量占比", val: "20%", unit: "全身总消耗" },
+          { label: "神经元总数", val: "约 860 亿", unit: "个" },
+          { label: "突触连接总数", val: "超 100 万亿", unit: "个" }
+        ],
+        sections: {
+          anatomy: "由大脑双半球、小脑、间脑与脑干（中脑、脑桥、延髓）构成。大脑皮质由六层神经元精细架构，表面高度折叠形成回（Gyri）与沟（Sulci），展开总表面积可达 2,200 平方厘米。",
+          skeletal: "由坚不可摧的脑颅骨（额骨、顶骨、枕骨、颞骨、蝶骨、筛骨共 8 块骨骼经骨缝紧密拼合）呈球形拱顶包被；内部借三层脑膜与 150ml 循环脑脊液形成失重般的浮力液压减震舱。",
+          histology: "分为神经元胞体密集的灰质皮层与富含髓鞘神经纤维传导束的白质；特有血脑屏障（BBB），由毛细血管内皮细胞的致密紧密连接、基膜与星形胶质细胞血管周足共同构筑，严防杂质侵入脑实质。",
+          cells: "各类神经元（锥体细胞、星状细胞、中间神经元）负责高频电化学脉冲传导；胶质细胞（星形胶质细胞负责代谢、少突胶质细胞合成绝缘髓鞘、小胶质细胞负责免疫清除）。",
+          facts: "大脑产生的新动作电位神经脉冲传输速度最高可达 120 米/秒（约 432 公里/小时）；脑内突触连接的总组合状态数，超过了已知可观测宇宙中所有恒星的总和！"
+        }
+      },
+      lung: {
+        id: "lung",
+        category: "organ",
+        titleCn: "呼吸系统 · 双肺与 3 亿肺泡气体交换微环境",
+        titleEn: "Respiratory System · Lungs & Alveolar Micro-Architecture",
+        badge: "气体代谢枢纽",
+        sceneKey: "lung",
+        icon: "🫁",
+        reticleCoords: { x: 175, y: 205 },
+        stats: [
+          { label: "肺泡总数量", val: "3 - 5 亿", unit: "个" },
+          { label: "换气总表面积", val: "70 - 100", unit: "m² (半个球场)" },
+          { label: "日吸入气体量", val: "约 10,000", unit: "升/天" },
+          { label: "气血屏障厚度", val: "仅 0.5", unit: "微米 (μm)" }
+        ],
+        sections: {
+          anatomy: "右肺分为上中下三叶，左肺因心脏凹陷分为上下两叶。气管自隆突处分出左右主支气管，经过 23 级树状分支最终终止于密集的葡萄串状肺泡囊泡簇。",
+          skeletal: "由 12 对肋骨、胸骨与胸椎骨骼构筑成坚韧且具弹性的骨性胸廓；吸气时肋间外肌收缩提升肋骨，膈肌下降，胸腔内部容积剧增产生负压完成被动吸气进气。",
+          histology: "气管黏膜覆盖假复层纤毛柱状上皮（由下至上摆动的“黏液纤毛自动扶梯”，阻截并排出尘埃细菌）；终末换气部为极致菲薄的气血屏障（仅由肺泡上皮、基底膜及毛细血管内皮三层构成）。",
+          cells: "I 型肺泡上皮细胞（覆盖 95% 肺泡表面，超薄扁平，专职氧与二氧化碳被动扩散）；II 型肺泡上皮细胞（圆球形，合成释放二棕榈酰卵磷脂等肺泡表面活性物质，防止肺泡呼气末塌陷）；肺泡巨噬细胞（尘细胞）。",
+          facts: "一个成年人的数亿个肺泡如果完全展开铺平，面积相当于半个标准网球场；每个红细胞穿过肺泡毛细血管仅需约 0.75 秒，却足以完成从暗紫脱氧血到鲜红富氧血的生命飞跃！"
+        }
+      },
+      spine: {
+        id: "spine",
+        category: "skeletal",
+        titleCn: "骨骼系统 · 脊柱中轴支柱与红骨髓造血生境",
+        titleEn: "Skeletal Framework · Spine & Hematopoietic Niche",
+        badge: "人体骨骼中轴",
+        sceneKey: "bone",
+        icon: "🦴",
+        reticleCoords: { x: 250, y: 270 },
+        stats: [
+          { label: "成人骨骼总数", val: "206", unit: "块" },
+          { label: "成人脊椎节数", val: "26", unit: "块 (颈7胸12腰5骶1尾1)" },
+          { label: "日造红细胞数", val: "约 2,000 亿", unit: "个/天" },
+          { label: "骨密质抗压度", val: "约 150", unit: "MPa (堪比花岗岩)" }
+        ],
+        sections: {
+          anatomy: "人体中轴承重龙骨，具备 4 个生理曲度（颈曲、胸曲、腰曲、骶曲），如同一根高弹性弹簧化解直立行走时的剧烈纵向震动。椎管内完整容纳并庇护着中枢神经脊髓。",
+          skeletal: "骨骼系统由 206 块骨构成（中轴骨 80 块，附肢骨 126 块）。椎骨之间通过纤维软骨椎间盘、黄韧带及棘间韧带紧密相扣，既活动自如又坚韧无比。",
+          histology: "骨组织为高度矿化的特化结缔组织，外层为高硬度致密的骨密质（由同心圆排列的哈弗斯骨单位骨板构成），内层为交错蜂窝状的骨松质（由骨小梁构成，力学排列随重力应力自适应重构）。",
+          cells: "成骨细胞（分泌 I 型胶原蛋白与骨基质，沉降钙磷晶体）；破骨细胞（多核巨细胞，释放酸性物质与水解酶重吸收老旧骨质完成骨重塑）；骨细胞（埋入骨陷窝中，通过细长突起感知机械应变）；骨髓造血干细胞（HSC）。",
+          facts: "骨骼不仅是运动杠杆，更是人体最大的钙磷矿物质储存库与免疫造血工厂；人体每秒钟诞生超过 200 万个崭新红细胞，全部来自于脊椎、胸骨及扁骨内的红骨髓！"
+        }
+      },
+      liver: {
+        id: "liver",
+        category: "organ",
+        titleCn: "消化代谢 · 肝脏生化工厂与胃肠微循环",
+        titleEn: "Metabolic Core · Liver Lobules & Gastrointestinal Axis",
+        badge: "生化解毒总站",
+        sceneKey: "liver",
+        icon: "🧪",
+        reticleCoords: { x: 215, y: 310 },
+        stats: [
+          { label: "器官净重", val: "1.2 - 1.6", unit: "kg (最大实质脏器)" },
+          { label: "承担生化功能", val: "超 500", unit: "种" },
+          { label: "血流量/分钟", val: "约 1,500", unit: "ml (~25%心输出)" },
+          { label: "完全再生能力", val: "仅需 25%", unit: "残留即可增殖复原" }
+        ],
+        sections: {
+          anatomy: "位于右季肋区及上腹部，分左右两叶。拥有独一无二的“双重血供系统”：肝动脉输入高氧富氧血，门静脉输入富含小肠吸收营养物质的静脉血，两股血流在微观血窦内交汇滤过。",
+          skeletal: "受到右侧第 5 至第 10 肋骨及肋软骨构成的坚实骨架严密遮蔽，深藏于膈肌穹隆之下，腹膜形成的镰状韧带与冠状韧带将其牢牢锚固于腹壁。",
+          histology: "微观结构以数万个多面体六角柱状的“肝小叶”为基础功能单位。中央贯穿中央静脉，周边六角棱角处分布着门管区（小叶间动/静脉及小叶间胆管），肝板与肝血窦呈辐射状排列。",
+          cells: "肝实质细胞（占肝脏总质量 80%，富含大量内质网与过氧化物酶体，专职糖原合成、白蛋白生产、胆汁生成及毒素转化）；库普弗细胞（Kupffer，常驻巨噬细胞，吞噬清除血液衰老残渣与肠源细菌）。",
+          facts: "肝脏是人体唯一拥有完整器官级再生能力的实质脏器，即使因手术切除多达 70% 的体积，凭借强悍的肝细胞去分化与代偿性分裂增殖，数周内即可重新长至原先体积！"
+        }
+      },
+      kidney: {
+        id: "kidney",
+        category: "organ",
+        titleCn: "泌尿排泄 · 双肾精密滤过与水盐内环境稳态",
+        titleEn: "Urinary System · Kidneys & Glomerular Filtration Unit",
+        badge: "液体稳态调节器",
+        sceneKey: "kidney",
+        icon: "💧",
+        reticleCoords: { x: 285, y: 345 },
+        stats: [
+          { label: "肾单位总数", val: "约 200 万", unit: "个 (左右肾各百万)" },
+          { label: "日滤过原尿量", val: "约 180", unit: "升/天" },
+          { label: "日终尿生成量", val: "仅 1.5 - 2", unit: "升 (99%重吸收)" },
+          { label: "血流占心输出", val: "20 - 25%", unit: "极高血流灌注" }
+        ],
+        sections: {
+          anatomy: "左右成对红褐色蚕豆形器官，位于腹膜后间隙脊柱两侧。外缘隆凸，内缘凹陷为肾门，神圣的肾动静脉、神经、淋巴管及输尿管在此汇集进出。",
+          skeletal: "上方受到第 11 及第 12 肋骨下缘部分遮护，后方紧贴腰大肌与第 12 胸椎至第 3 腰椎横突，外围由多层肾筋膜与厚实的肾周脂肪囊（肾脂体）构成防震护甲。",
+          histology: "实质分为外层颗粒状的肾皮质与深层放射状的肾髓质（肾锥体与髓质放射线）。基本结构与功能单位是“肾单位”（Nephron），由肾小球、肾小囊及肾小管（近端小管、髓袢、远端小管）串联构成。",
+          cells: "足细胞（Podocytes，特化上皮细胞，具有无数初级与次级足突，互锁交织构成 20-30nm 的精密电荷滤过狭缝）；肾小管刷状缘上皮细胞（高密度微绒毛与钠钾泵，99% 滤液水分与全部葡萄糖在此重吸收回血）。",
+          facts: "人体全身血液大约每 4-5 分钟就会彻底流经肾脏循环过滤一遍，一天累计净化血量高达 1,800 升；肾脏还是分泌促红细胞生成素（EPO）激活骨髓造血的关键内分泌器官！"
+        }
+      },
+      pelvis: {
+        id: "pelvis",
+        category: "skeletal",
+        titleCn: "骨盆与外周 · 躯干底座与大血管主干分流",
+        titleEn: "Pelvic Girdle & Peripheral Vasculature System",
+        badge: "承重底座与大分流",
+        sceneKey: "bone",
+        icon: "🦴",
+        reticleCoords: { x: 250, y: 440 },
+        stats: [
+          { label: "骨盆骨骼构成", val: "4", unit: "块 (髋骨2骶骨尾骨)" },
+          { label: "腹主动脉分叉", val: "第 4 腰椎", unit: "水平" },
+          { label: "下腔静脉回流", val: "约 75%", unit: "回心血量来自下腔" },
+          { label: "骨骼力学结构", val: "拱形穹顶", unit: "分散直立重力" }
+        ],
+        sections: {
+          anatomy: "骨盆是由两块髋骨、骶骨与尾骨围成的坚固骨环，上连脊柱腰段，下接左右股骨头。腹主动脉在第 4 腰椎高度分出左、右髂总动脉，供给盆腔脏器及下肢全部血供。",
+          skeletal: "骨盆为闭合性骨环，前后左右通过强大的骶髂韧带、骶棘韧带及耻骨联合紧固相连。直立行走时将上半身体重平稳分配传递至双侧下肢骨骼。",
+          histology: "腹盆腔大血管具备厚实的结缔组织外膜与丰富的弹性纤维中膜；下肢深静脉管腔内密布成对的半月形“静脉瓣”，配合骨骼肌收缩泵（小腿肌泵）强力促使静脉血克服重力回心。",
+          cells: "盆骨红骨髓内的造血干细胞与基质细胞；血管内膜的单层扁平内皮细胞；骨盆底肌群（提肛肌等）的高张力骨骼肌纤维细胞。",
+          facts: "人类骨盆在进化史上发生革命性改变以支持双足直立行走；下肢静脉内的静脉瓣如同单向阀门，即使倒立或跳跃，也能阻止重力引起的血液淤滞倒流！"
+        }
+      },
+      circulation: {
+        id: "circulation",
+        category: "circulation",
+        titleCn: "血液循环 · 血管网络与红细胞具身穿行",
+        titleEn: "Cardiovascular Loop · Vascular Tree & RBC Translocation",
+        badge: "全身大循环闭环",
+        sceneKey: "blood",
+        icon: "🩸",
+        reticleCoords: { x: 254, y: 360 },
+        stats: [
+          { label: "血管总长度", val: "约 100,000", unit: "km (绕赤道2.5圈)" },
+          { label: "循环一次耗时", val: "约 20 - 25", unit: "秒" },
+          { label: "红细胞总数量", val: "约 25 万亿", unit: "个 (占细胞84%)" },
+          { label: "单个红细胞寿命", val: "约 120", unit: "天" }
+        ],
+        sections: {
+          anatomy: "由体循环（大循环：左心室 ➔ 主动脉 ➔ 全身毛细血管 ➔ 腔静脉 ➔ 右心房）与肺循环（小循环：右心室 ➔ 肺动脉 ➔ 肺泡微血管 ➔ 肺静脉 ➔ 左心房）两个闭环首尾相连而成。",
+          skeletal: "从脑颅基底的 Willis 动脉环，到穿行于胸廓的主动脉弓与胸主动脉，直至骨盆分叉的髂血管与四肢深浅静脉，完整骨骼为大血管提供了坚实走向槽与深层保护。",
+          histology: "血管管壁由内膜（单层血管内皮细胞，分泌一氧化氮舒张血管）、中膜（平滑肌纤维与弹性蛋白板，调控外周阻力与血压）及外膜（成纤维细胞与结缔组织）构成。",
+          cells: "成熟红细胞（无细胞核及细胞器，双凹圆盘形，单个红细胞装载约 2.7 亿个血红蛋白分子，可结合 10 亿个氧分子）；白细胞（中性粒细胞、淋巴细胞等）；血小板（无核细胞碎片，止血凝血）。",
+          facts: "如果将一个普通人全身的大动脉、小动脉、毛细血管与静脉拉成一条直线，总长度接近 10 万公里，足以环绕地球赤道两圈半；毛细血管的内径仅有 5-8 微米，红细胞必须挤压变形单列排队穿过！"
+        }
+      }
+    };
+
+    /* =========================================================================
+       2. 状态管理器
        ========================================================================= */
     const STATE = {
+      activeAnatomy: "heart",
+      viewLevel: "macro", // "macro" or "micro"
+      activeCategory: "all", // "all", "organ", "skeletal", "cells", "circulation"
       bpm: 75,
       spo2: 0.98,
-      speedMultiplier: 0.5, // 默认 0.5x 慢放，确保清晰看清血液流动部位
+      speedMultiplier: 0.5,
       isPaused: false,
-      cameraMode: 'pov',
       audioEnabled: true,
       curveProgress: 0.0,
       currentSpeed: 190,
       heartbeatPhase: 0.0,
+      breathingPhase: 0.0
     };
 
     /* =========================================================================
-       2. Web Audio API 程序化心音合成器
+       3. Web Audio API 程序化音效引擎
        ========================================================================= */
     class CardiovascularAudioEngine {
       constructor() {
@@ -996,28 +1295,15 @@
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
         osc.type = 'sine';
         osc.frequency.setValueAtTime(65, now);
         osc.frequency.exponentialRampToValueAtTime(35, now + 0.14);
-
         gain.gain.setValueAtTime(0.85, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.18);
-
-        if (this.bloodFilter && this.bloodGain) {
-          this.bloodFilter.frequency.cancelScheduledValues(now);
-          this.bloodFilter.frequency.setValueAtTime(380, now);
-          this.bloodFilter.frequency.exponentialRampToValueAtTime(180, now + 0.35);
-
-          this.bloodGain.gain.cancelScheduledValues(now);
-          this.bloodGain.gain.setValueAtTime(0.65, now);
-          this.bloodGain.gain.exponentialRampToValueAtTime(0.25, now + 0.4);
-        }
+        osc.stop(now + 0.16);
       }
 
       playS2() {
@@ -1025,18 +1311,39 @@
         const now = this.ctx.currentTime;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(85, now);
-        osc.frequency.exponentialRampToValueAtTime(45, now + 0.11);
-
-        gain.gain.setValueAtTime(0.55, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
-
+        osc.frequency.setValueAtTime(95, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.11);
+        gain.gain.setValueAtTime(0.65, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
         osc.start(now);
-        osc.stop(now + 0.14);
+        osc.stop(now + 0.13);
+      }
+
+      playChime() {
+        if (!this.ctx || this.isMuted) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.26);
+      }
+
+      updateBloodFlowPitch(velocity) {
+        if (!this.bloodFilter || !this.bloodGain || this.isMuted) return;
+        const targetFreq = 140 + velocity * 1.5;
+        const targetGain = 0.15 + (velocity / 400) * 0.45;
+        this.bloodFilter.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.05);
+        this.bloodGain.gain.setTargetAtTime(targetGain, this.ctx.currentTime, 0.05);
       }
 
       setMute(mute) {
@@ -1050,68 +1357,347 @@
     const soundEngine = new CardiovascularAudioEngine();
 
     /* =========================================================================
-       3. 动态内皮细胞血管纹理
+       4. Three.js 3D 局部放大多维场景生成器
        ========================================================================= */
-    function createEndotheliumTexture() {
-      const canvas = document.createElement('canvas');
-      canvas.width = 1024;
-      canvas.height = 512;
-      const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('webgl-canvas');
+    const container = document.getElementById('webgl-canvas-container');
 
-      const grad = ctx.createLinearGradient(0, 0, 0, 512);
-      grad.addColorStop(0, '#260206');
-      grad.addColorStop(0.5, '#480610');
-      grad.addColorStop(1, '#260206');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1024, 512);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.45;
 
-      ctx.lineWidth = 1.5;
-      ctx.strokeStyle = 'rgba(255, 90, 120, 0.15)';
-      ctx.fillStyle = 'rgba(244, 63, 94, 0.05)';
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x060104);
+    scene.fog = new THREE.FogExp2(0x0c0206, 0.012);
 
-      const rows = 16;
-      const cols = 32;
-      const cellW = 1024 / cols;
-      const cellH = 512 / rows;
+    const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1000);
+    camera.position.set(0, 0, 24);
 
-      for (let r = 0; r < rows; r++) {
-        const offset = (r % 2) * (cellW * 0.5);
-        for (let c = 0; c < cols; c++) {
-          const x = c * cellW + offset;
-          const y = r * cellH;
-          ctx.beginPath();
-          ctx.ellipse(x + cellW * 0.5, y + cellH * 0.5, cellW * 0.45, cellH * 0.35, 0, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
+    const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+    orbitControls.enableDamping = true;
+    orbitControls.dampingFactor = 0.06;
+    orbitControls.autoRotate = true;
+    orbitControls.autoRotateSpeed = 1.2;
 
-          ctx.fillStyle = 'rgba(120, 10, 30, 0.25)';
-          ctx.beginPath();
-          ctx.arc(x + cellW * 0.5, y + cellH * 0.5, 3, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = 'rgba(244, 63, 94, 0.05)';
-        }
-      }
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
+    scene.add(ambientLight);
 
-      ctx.strokeStyle = 'rgba(255, 140, 160, 0.08)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 40; i++) {
-        const py = Math.random() * 512;
-        ctx.beginPath();
-        ctx.moveTo(0, py);
-        ctx.lineTo(1024, py + (Math.random() - 0.5) * 30);
-        ctx.stroke();
-      }
+    const dirLight1 = new THREE.DirectionalLight(0xff6688, 2.5);
+    dirLight1.position.set(15, 20, 20);
+    scene.add(dirLight1);
 
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.repeat.set(16, 2);
-      return texture;
+    const dirLight2 = new THREE.DirectionalLight(0x38bdf8, 1.8);
+    dirLight2.position.set(-15, -10, 15);
+    scene.add(dirLight2);
+
+    const pointLight = new THREE.PointLight(0xf43f5e, 3, 50);
+    scene.add(pointLight);
+
+    function resizeMicroViewport() {
+      const w = container.clientWidth || 380;
+      const h = container.clientHeight || 280;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
     }
 
-    /* =========================================================================
-       4. 真实双凹圆盘红细胞几何体（Evans-Fung 方程）
-       ========================================================================= */
+    // 建立各类别的 3D Group
+    const groups = {
+      heart: new THREE.Group(),
+      brain: new THREE.Group(),
+      lung: new THREE.Group(),
+      bone: new THREE.Group(),
+      liver: new THREE.Group(),
+      kidney: new THREE.Group(),
+      blood: new THREE.Group(),
+      cellMicro: new THREE.Group()
+    };
+
+    Object.values(groups).forEach(g => scene.add(g));
+
+    // 1. 构建 3D 心脏模型 (Heart)
+    let heartVentriclesMesh = null;
+    (function initHeartScene() {
+      const g = groups.heart;
+      // 心肌实体 (Cardioid deformed sphere)
+      const vGeom = new THREE.SphereGeometry(6.5, 36, 36);
+      const pos = vGeom.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        let x = pos.getX(i);
+        let y = pos.getY(i);
+        let z = pos.getZ(i);
+        if (y < 0) {
+          const factor = 1 + y * 0.09;
+          x *= factor;
+          z *= factor;
+        }
+        x -= (y < 0 ? y * 0.12 : 0);
+        pos.setXYZ(i, x * 1.05, y * 1.15, z * 0.88);
+      }
+      vGeom.computeVertexNormals();
+
+      const heartMat = new THREE.MeshPhysicalMaterial({
+        color: 0xbe123c,
+        emissive: 0x33060c,
+        roughness: 0.28,
+        metalness: 0.1,
+        clearcoat: 0.9,
+        clearcoatRoughness: 0.15
+      });
+      heartVentriclesMesh = new THREE.Mesh(vGeom, heartMat);
+      g.add(heartVentriclesMesh);
+
+      // 主动脉弓管道 (Aortic Arch)
+      const aortaCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 4.5, 0),
+        new THREE.Vector3(-0.8, 8, 0.5),
+        new THREE.Vector3(1.5, 10.5, -1),
+        new THREE.Vector3(4.5, 9.5, -2.5),
+        new THREE.Vector3(5.5, 4, -3)
+      ]);
+      const aortaMesh = new THREE.Mesh(
+        new THREE.TubeGeometry(aortaCurve, 32, 1.5, 16, false),
+        new THREE.MeshStandardMaterial({ color: 0xe11d48, roughness: 0.25, metalness: 0.15 })
+      );
+      g.add(aortaMesh);
+
+      // 肺动脉干管道 (Pulmonary Artery)
+      const paCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0.5, 3.5, 2.5),
+        new THREE.Vector3(-1.2, 7, 2),
+        new THREE.Vector3(-4.5, 7.8, 0)
+      ]);
+      const paMesh = new THREE.Mesh(
+        new THREE.TubeGeometry(paCurve, 24, 1.3, 16, false),
+        new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.25, metalness: 0.15 })
+      );
+      g.add(paMesh);
+
+      // 冠状动脉血管网脉络 (Coronary Lines)
+      const vesselMat = new THREE.LineBasicMaterial({ color: 0xff6688, linewidth: 2 });
+      for (let j = 0; j < 8; j++) {
+        const pts = [];
+        let cur = new THREE.Vector3((Math.random() - 0.5) * 3, 2, 4.5);
+        pts.push(cur.clone());
+        for (let k = 0; k < 6; k++) {
+          cur = cur.clone().add(new THREE.Vector3((Math.random() - 0.5) * 1.8, -1.2, (Math.random() - 0.5) * 1.5)).normalize().multiplyScalar(6.6);
+          pts.push(cur);
+        }
+        g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), vesselMat));
+      }
+    })();
+
+    // 2. 构建 3D 大脑与神经网络模型 (Brain & Neural Net)
+    let brainSynapsePoints = null;
+    (function initBrainScene() {
+      const g = groups.brain;
+      [-2.6, 2.6].forEach((xOff, idx) => {
+        const hemiGeom = new THREE.SphereGeometry(5.2, 32, 32);
+        const pos = hemiGeom.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          let x = pos.getX(i);
+          let y = pos.getY(i);
+          let z = pos.getZ(i);
+          const freq = 1.6;
+          const bump = (Math.sin(x * freq) * Math.cos(y * freq) * Math.sin(z * freq)) * 0.42;
+          pos.setXYZ(i, x + (x > 0 ? bump : -bump), y * 1.25 + bump, z * 1.45 + bump);
+        }
+        hemiGeom.computeVertexNormals();
+
+        const hemiMat = new THREE.MeshStandardMaterial({
+          color: idx === 0 ? 0xfda4af : 0xfbcfe8,
+          roughness: 0.35,
+          metalness: 0.05,
+          emissive: 0x22050c
+        });
+        const hemi = new THREE.Mesh(hemiGeom, hemiMat);
+        hemi.position.x = xOff;
+        g.add(hemi);
+      });
+
+      // 突触脉冲发光粒子网络 (Synaptic Action Potential Cloud)
+      const synCount = 180;
+      const synGeom = new THREE.BufferGeometry();
+      const synPos = new Float32Array(synCount * 3);
+      for (let i = 0; i < synCount; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(Math.random() * 2 - 1);
+        const r = 6.2 + Math.random() * 2.5;
+        synPos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+        synPos[i * 3 + 1] = r * Math.cos(phi) * 1.2;
+        synPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta) * 1.3;
+      }
+      synGeom.setAttribute('position', new THREE.BufferAttribute(synPos, 3));
+      const synMat = new THREE.PointsMaterial({
+        size: 1.8,
+        color: 0x38bdf8,
+        transparent: true,
+        blending: THREE.AdditiveBlending
+      });
+      brainSynapsePoints = new THREE.Points(synGeom, synMat);
+      g.add(brainSynapsePoints);
+    })();
+
+    // 3. 构建 3D 双肺与肺泡集群模型 (Lungs & Alveoli)
+    let lungAlveoliGroup = new THREE.Group();
+    (function initLungScene() {
+      const g = groups.lung;
+      // 树状气管系统 (Bronchial Arborization)
+      const tracheaCurve = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 9, 0),
+        new THREE.Vector3(0, 3, 0)
+      ]);
+      const trachea = new THREE.Mesh(
+        new THREE.TubeGeometry(tracheaCurve, 16, 1.2, 16, false),
+        new THREE.MeshStandardMaterial({ color: 0xfff1f2, roughness: 0.3 })
+      );
+      g.add(trachea);
+
+      // 左右支气管
+      [[-4.5, -1], [4.5, -1]].forEach(([targetX, targetY]) => {
+        const bCurve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(0, 3, 0),
+          new THREE.Vector3(targetX * 0.4, 1.8, 0),
+          new THREE.Vector3(targetX, targetY, 0)
+        ]);
+        g.add(new THREE.Mesh(
+          new THREE.TubeGeometry(bCurve, 20, 0.85, 12, false),
+          new THREE.MeshStandardMaterial({ color: 0xfda4af, roughness: 0.35 })
+        ));
+      });
+
+      // 肺泡囊泡簇 (Translucent Alveolar Clusters)
+      const clusterGeom = new THREE.SphereGeometry(1.4, 18, 18);
+      const clusterMat = new THREE.MeshPhysicalMaterial({
+        color: 0xf43f5e,
+        roughness: 0.2,
+        transmission: 0.55,
+        transparent: true,
+        opacity: 0.85,
+        clearcoat: 0.8
+      });
+
+      for (let i = 0; i < 22; i++) {
+        const m = new THREE.Mesh(clusterGeom, clusterMat);
+        const theta = Math.random() * Math.PI * 2;
+        const r = 2.5 + Math.random() * 4.5;
+        const xSide = Math.random() > 0.5 ? 1 : -1;
+        m.position.set(xSide * (3 + r * Math.cos(theta)), -2 + (Math.random() - 0.5) * 6, r * Math.sin(theta) * 0.7);
+        m.scale.setScalar(0.7 + Math.random() * 0.6);
+        lungAlveoliGroup.add(m);
+      }
+      g.add(lungAlveoliGroup);
+    })();
+
+    // 4. 构建 3D 骨骼与骨髓网格模型 (Spine & Bone Marrow)
+    (function initBoneScene() {
+      const g = groups.bone;
+      // 椎体 (Vertebral Body)
+      const bodyGeom = new THREE.CylinderGeometry(5, 5, 4, 32);
+      const boneMat = new THREE.MeshStandardMaterial({
+        color: 0xf1f5f9,
+        roughness: 0.4,
+        metalness: 0.05
+      });
+      const vBody = new THREE.Mesh(bodyGeom, boneMat);
+      vBody.position.set(0, 0, -2);
+      g.add(vBody);
+
+      // 椎弓与棘突 (Spinous & Transverse Processes)
+      const spinousGeom = new THREE.ConeGeometry(2, 6, 16);
+      const spinous = new THREE.Mesh(spinousGeom, boneMat);
+      spinous.rotation.x = Math.PI * 0.5;
+      spinous.position.set(0, 0, 5);
+      g.add(spinous);
+
+      [-5.5, 5.5].forEach(x => {
+        const trans = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1.8, 1.8), boneMat);
+        trans.position.set(x, 0, 1.5);
+        g.add(trans);
+      });
+
+      // 内部松质骨骨小梁格架 (Spongy Cancellous Trabeculae)
+      const trabGeom = new THREE.IcosahedronGeometry(3.6, 2);
+      const trabMat = new THREE.MeshStandardMaterial({
+        color: 0xbe123c,
+        wireframe: true,
+        roughness: 0.5
+      });
+      const trab = new THREE.Mesh(trabGeom, trabMat);
+      trab.position.set(0, 0, -2);
+      g.add(trab);
+    })();
+
+    // 5. 构建 3D 肝小叶模型 (Liver Lobule)
+    (function initLiverScene() {
+      const g = groups.liver;
+      // 六角形肝小叶棱柱 (Hexagonal Prism)
+      const hexGeom = new THREE.CylinderGeometry(7, 7, 5, 6);
+      const hexMat = new THREE.MeshPhysicalMaterial({
+        color: 0x991b1b,
+        roughness: 0.35,
+        transmission: 0.4,
+        transparent: true,
+        opacity: 0.75
+      });
+      const lobule = new THREE.Mesh(hexGeom, hexMat);
+      g.add(lobule);
+
+      // 中央静脉 (Central Vein)
+      const cvGeom = new THREE.CylinderGeometry(0.9, 0.9, 6.5, 16);
+      const cvMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8 });
+      g.add(new THREE.Mesh(cvGeom, cvMat));
+
+      // 辐射状血窦流动点阵 (Sinusoidal Flow Points)
+      const ptCount = 120;
+      const ptGeom = new THREE.BufferGeometry();
+      const ptPos = new Float32Array(ptCount * 3);
+      for (let i = 0; i < ptCount; i++) {
+        const angle = (Math.floor(Math.random() * 6) * Math.PI) / 3 + (Math.random() - 0.5) * 0.4;
+        const rad = 1.2 + Math.random() * 5.2;
+        ptPos[i * 3] = rad * Math.cos(angle);
+        ptPos[i * 3 + 1] = (Math.random() - 0.5) * 4;
+        ptPos[i * 3 + 2] = rad * Math.sin(angle);
+      }
+      ptGeom.setAttribute('position', new THREE.BufferAttribute(ptPos, 3));
+      const ptMat = new THREE.PointsMaterial({ size: 1.4, color: 0xf43f5e });
+      g.add(new THREE.Points(ptGeom, ptMat));
+    })();
+
+    // 6. 构建 3D 肾单位与肾小球微观滤过球 (Kidney & Nephron Glomerulus)
+    (function initKidneyScene() {
+      const g = groups.kidney;
+      // 肾小囊 (Bowman's Capsule)
+      const capGeom = new THREE.SphereGeometry(6, 32, 32);
+      const capMat = new THREE.MeshPhysicalMaterial({
+        color: 0xfef08a,
+        roughness: 0.2,
+        transmission: 0.7,
+        transparent: true,
+        opacity: 0.65
+      });
+      g.add(new THREE.Mesh(capGeom, capMat));
+
+      // 肾小球毛细血管球团 (Glomerular Capillary Tuft)
+      const tuftGeom = new THREE.TorusKnotGeometry(2.8, 0.7, 80, 16);
+      const tuftMat = new THREE.MeshStandardMaterial({
+        color: 0xe11d48,
+        roughness: 0.25,
+        metalness: 0.1
+      });
+      g.add(new THREE.Mesh(tuftGeom, tuftMat));
+
+      // 入球/出球微动脉
+      [[-4.5, 4.5], [4.5, 4.5]].forEach(([x, y]) => {
+        const art = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.7, 4, 16), new THREE.MeshStandardMaterial({ color: 0xf43f5e }));
+        art.position.set(x * 0.7, y, 0);
+        art.rotation.z = x > 0 ? -0.4 : 0.4;
+        g.add(art);
+      });
+    })();
+
+    // 7. 构建 3D 血管管道与红细胞舰队 (Bloodstream Original View)
     function createErythrocyteGeometry(radius = 2.4) {
       const points = [];
       const segments = 40;
@@ -1125,46 +1711,19 @@
       return geom;
     }
 
-    /* =========================================================================
-       5. 右侧 1/4 微观视窗 3D 场景与红细胞特写
-       ========================================================================= */
-    const canvas = document.getElementById('webgl-canvas');
-    const container = document.getElementById('webgl-canvas-container');
+    const rbcGeom = createErythrocyteGeometry(2.6);
+    const rbcMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xe11d48,
+      roughness: 0.3,
+      metalness: 0.05,
+      clearcoat: 0.9,
+      clearcoatRoughness: 0.18,
+      reflectivity: 0.85
+    });
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.45;
+    const heroRBC = new THREE.Mesh(rbcGeom, rbcMaterial.clone());
+    groups.blood.add(heroRBC);
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x060104);
-    scene.fog = new THREE.FogExp2(0x0c0206, 0.008);
-
-    const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000);
-    const orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-    orbitControls.enableDamping = true;
-    orbitControls.dampingFactor = 0.05;
-    orbitControls.enabled = false;
-
-    function resizeMicroViewport() {
-      const w = container.clientWidth || 340;
-      const h = container.clientHeight || 500;
-      renderer.setSize(w, h);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    }
-    resizeMicroViewport();
-
-    const ambientLight = new THREE.AmbientLight(0x4a0812, 1.8);
-    scene.add(ambientLight);
-
-    const heartLight = new THREE.PointLight(0xff2244, 3.0, 120);
-    scene.add(heartLight);
-
-    const heroFollowLight = new THREE.PointLight(0xff8899, 2.4, 40);
-    scene.add(heroFollowLight);
-
-    // 3D 血管管道样条回路
     const splinePoints = [
       new THREE.Vector3(0, 0, 0),
       new THREE.Vector3(25, 12, -45),
@@ -1178,40 +1737,23 @@
       new THREE.Vector3(-8, 12, -15)
     ];
     const vesselCurve = new THREE.CatmullRomCurve3(splinePoints, true, 'centripetal', 0.5);
-
     const vesselRadius = 14;
-    const vesselGeom = new THREE.TubeGeometry(vesselCurve, 320, vesselRadius, 22, true);
+
+    const vesselGeom = new THREE.TubeGeometry(vesselCurve, 280, vesselRadius, 20, true);
     const vesselMaterial = new THREE.MeshStandardMaterial({
-      map: createEndotheliumTexture(),
       side: THREE.BackSide,
       roughness: 0.38,
       metalness: 0.12,
-      color: new THREE.Color(0xff3344),
-      emissive: new THREE.Color(0x33060c),
+      color: 0xff3344,
+      emissive: 0x33060c,
       emissiveIntensity: 0.7
     });
     const vesselMesh = new THREE.Mesh(vesselGeom, vesselMaterial);
-    scene.add(vesselMesh);
+    groups.blood.add(vesselMesh);
 
-    // 主角特写红细胞（Hero RBC）
-    const rbcGeom = createErythrocyteGeometry(2.6);
-    const rbcMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0xe11d48),
-      roughness: 0.3,
-      metalness: 0.05,
-      clearcoat: 0.9,
-      clearcoatRoughness: 0.18,
-      reflectivity: 0.85
-    });
-
-    const heroRBC = new THREE.Mesh(rbcGeom, rbcMaterial.clone());
-    scene.add(heroRBC);
-
-    // 伴游红细胞舰队
-    const FLEET_COUNT = 35;
+    // 伴游红细胞群
+    const FLEET_COUNT = 30;
     const fleetData = [];
-    const fleetGroup = new THREE.Group();
-
     for (let i = 0; i < FLEET_COUNT; i++) {
       const mesh = new THREE.Mesh(rbcGeom, rbcMaterial);
       const progressOffset = Math.random();
@@ -1222,174 +1764,180 @@
         (Math.random() - 0.5) * 1.5,
         (Math.random() - 0.5) * 1.5
       );
-      const scale = 0.75 + Math.random() * 0.35;
-      mesh.scale.set(scale, scale, scale);
-
-      fleetGroup.add(mesh);
+      mesh.scale.setScalar(0.75 + Math.random() * 0.35);
+      groups.blood.add(mesh);
       fleetData.push({ mesh, progressOffset, radialDist, angle, rotSpeed });
     }
-    scene.add(fleetGroup);
 
-    // 氧微粒系统
-    const PARTICLE_COUNT = 240;
-    const particleGeom = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(PARTICLE_COUNT * 3);
-    const particleOffsets = [];
+    // 默认展示 Heart
+    switch3DScene('heart', 'macro');
+    resizeMicroViewport();
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particlePositions[i * 3] = 0;
-      particlePositions[i * 3 + 1] = 0;
-      particlePositions[i * 3 + 2] = 0;
-      particleOffsets.push({
-        progress: Math.random(),
-        radius: Math.random() * (vesselRadius * 0.8),
-        angle: Math.random() * Math.PI * 2,
-        speedFactor: 0.8 + Math.random() * 0.4
-      });
-    }
-    particleGeom.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-
-    function createGlowPointTexture() {
-      const c = document.createElement('canvas');
-      c.width = 64; c.height = 64;
-      const g = c.getContext('2d').createRadialGradient(32, 32, 0, 32, 32, 32);
-      g.addColorStop(0, 'rgba(255, 230, 150, 1)');
-      g.addColorStop(0.3, 'rgba(255, 100, 130, 0.6)');
-      g.addColorStop(1, 'rgba(255, 50, 80, 0)');
-      c.getContext('2d').fillStyle = g;
-      c.getContext('2d').fillRect(0, 0, 64, 64);
-      return new THREE.CanvasTexture(c);
+    function switch3DScene(sceneKey, mode) {
+      Object.keys(groups).forEach(k => groups[k].visible = false);
+      if (sceneKey === 'blood' || sceneKey === 'circulation') {
+        groups.blood.visible = true;
+        orbitControls.autoRotate = false;
+      } else if (groups[sceneKey]) {
+        groups[sceneKey].visible = true;
+        orbitControls.autoRotate = true;
+        camera.position.set(0, 0, 24);
+        orbitControls.target.set(0, 0, 0);
+      }
     }
 
-    const particleMaterial = new THREE.PointsMaterial({
-      size: 2.2,
-      map: createGlowPointTexture(),
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      color: new THREE.Color(0xfbbf24)
-    });
-    const particleSystem = new THREE.Points(particleGeom, particleMaterial);
-    scene.add(particleSystem);
+    function reset3DCamera() {
+      camera.position.set(0, 0, 24);
+      orbitControls.target.set(0, 0, 0);
+      orbitControls.update();
+    }
 
     /* =========================================================================
-       6. 中央巨大人体透视模型：逼真血液流动追踪与引线联动
+       5. 解剖选择与多层科学解说卡片更新
+       ========================================================================= */
+    const detailDossierCard = document.getElementById('detail-dossier-card');
+    const viewportOrganTitle = document.getElementById('viewport-organ-title');
+    const microStateText = document.getElementById('micro-state-text');
+    const microStateSub = document.getElementById('micro-state-sub');
+    const laserBeam = document.getElementById('laser-beam');
+    const organReticle = document.getElementById('organ-reticle');
+
+    function selectAnatomy(key, viewLevel = 'macro') {
+      const data = ANATOMY_DATABASE[key];
+      if (!data) return;
+
+      STATE.activeAnatomy = key;
+      STATE.viewLevel = viewLevel;
+
+      // 播放高科技微量和弦音频
+      soundEngine.playChime();
+
+      // 1. 同步瞄准靶心与激光束位置
+      if (data.reticleCoords) {
+        organReticle.setAttribute('transform', `translate(${data.reticleCoords.x}, ${data.reticleCoords.y})`);
+        laserBeam.setAttribute('x1', data.reticleCoords.x);
+        laserBeam.setAttribute('y1', data.reticleCoords.y);
+        laserBeam.setAttribute('x2', 495);
+        laserBeam.setAttribute('y2', data.reticleCoords.y);
+      }
+
+      // 2. 高亮中心标牌与左侧导航项
+      document.querySelectorAll('.macro-pin-badge').forEach(p => p.classList.remove('active'));
+      const activePin = document.getElementById(`pin-${key}`);
+      if (activePin) activePin.classList.add('active');
+
+      document.querySelectorAll('.anatomy-dir-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById(`dir-btn-${key}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // 3. 更新右侧 3D 视窗
+      switch3DScene(data.sceneKey, viewLevel);
+      viewportOrganTitle.innerHTML = `${data.icon} ${data.titleCn.split('·')[0].trim()} · ${viewLevel === 'macro' ? '宏观 3D 器官' : '微观 3D 细胞'}`;
+      microStateText.textContent = data.titleCn;
+      microStateSub.textContent = "🖱️ 可 360° 拖拽旋转 · 滚轮缩放查看精细结构";
+
+      // 4. 更新右侧档案解说卡片
+      renderDossierCard(data);
+    }
+
+    function renderDossierCard(data) {
+      let metricsHtml = "";
+      data.stats.forEach(s => {
+        metricsHtml += `
+          <div class="metric-col">
+            <span class="dossier-metric-k">${s.label}</span>
+            <span class="dossier-metric-v">${s.val}<span class="dossier-metric-u">${s.unit}</span></span>
+          </div>
+        `;
+      });
+
+      detailDossierCard.innerHTML = `
+        <div class="dossier-header">
+          <div>
+            <div class="dossier-title-main">${data.icon} ${data.titleCn}</div>
+            <div class="dossier-title-en">${data.titleEn}</div>
+          </div>
+          <span class="dossier-badge" style="background: rgba(244,63,94,0.25); color: #ffe4e6; border: 1px solid rgba(244,63,94,0.4);">${data.badge}</span>
+        </div>
+
+        <!-- 关键数据遥测栏 -->
+        <div class="dossier-metrics-grid">
+          ${metricsHtml}
+        </div>
+
+        <!-- 5 大结构解剖知识卡片 -->
+        <div class="dossier-block">
+          <div class="dossier-block-title">🫀 【解剖定位与宏观构造】</div>
+          <div class="dossier-block-text">${data.sections.anatomy}</div>
+        </div>
+
+        <div class="dossier-block cyan">
+          <div class="dossier-block-title">🦴 【骨骼力学架构与保护】</div>
+          <div class="dossier-block-text">${data.sections.skeletal}</div>
+        </div>
+
+        <div class="dossier-block gold">
+          <div class="dossier-block-title">🔬 【显微组织学微观构造】</div>
+          <div class="dossier-block-text">${data.sections.histology}</div>
+        </div>
+
+        <div class="dossier-block blue">
+          <div class="dossier-block-title">🧬 【特征细胞与微观生命】</div>
+          <div class="dossier-block-text">${data.sections.cells}</div>
+        </div>
+
+        <div class="dossier-block purple">
+          <div class="dossier-block-title">💡 【生理功能与生命奥秘】</div>
+          <div class="dossier-block-text">${data.sections.facts}</div>
+        </div>
+      `;
+    }
+
+    // 初始渲染 Heart 档案
+    renderDossierCard(ANATOMY_DATABASE.heart);
+
+    /* =========================================================================
+       6. 分类过滤与视角层级切换
+       ========================================================================= */
+    function setCategoryFilter(cat) {
+      STATE.activeCategory = cat;
+      document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+      const activeTab = document.getElementById(`tab-${cat}`);
+      if (activeTab) activeTab.classList.add('active');
+
+      document.querySelectorAll('.macro-pin-badge').forEach(pin => {
+        const pinCat = pin.getAttribute('data-category');
+        if (cat === 'all' || pinCat === cat) {
+          pin.classList.remove('dimmed');
+        } else {
+          pin.classList.add('dimmed');
+        }
+      });
+
+      // 自动跳转至该类别的旗舰解剖区域
+      if (cat === 'organ') selectAnatomy('heart');
+      else if (cat === 'skeletal') selectAnatomy('spine');
+      else if (cat === 'cells') selectAnatomy('lung', 'micro');
+      else if (cat === 'circulation') selectAnatomy('circulation');
+    }
+
+    function setViewLevel(level) {
+      STATE.viewLevel = level;
+      document.getElementById('btn-view-macro').classList.toggle('active', level === 'macro');
+      document.getElementById('btn-view-micro').classList.toggle('active', level === 'micro');
+      selectAnatomy(STATE.activeAnatomy, level);
+    }
+
+    /* =========================================================================
+       7. 血液循环动力学与动画主循环
        ========================================================================= */
     const giantTransitPath = document.getElementById('giant-transit-path');
     const bloodBolusTracer = document.getElementById('blood-bolus-tracer');
     const tracerCore = document.getElementById('tracer-core');
     const tracerDir = document.getElementById('tracer-dir');
     const cardiacGlow = document.getElementById('cardiac-glow');
-
-    const hudSiteTitle = document.getElementById('hud-site-title');
-    const hudBloodTag = document.getElementById('hud-blood-tag');
-    const hudSiteDesc = document.getElementById('hud-site-desc');
-    const microStateText = document.getElementById('micro-state-text');
-
-    const pins = {
-      pa: document.getElementById('pin-pa'),
-      lung: document.getElementById('pin-lung'),
-      aorta: document.getElementById('pin-aorta'),
-      lv: document.getElementById('pin-lv'),
-      daorta: document.getElementById('pin-daorta'),
-      ivc: document.getElementById('pin-ivc')
-    };
-
     const totalPathLength = giantTransitPath.getTotalLength();
 
-    function updateGiantHumanCirculation(progress, pulseCurve) {
-      // 1. 获取人体 500x500 解剖模型上的绝对坐标
-      const currentLen = (progress * totalPathLength) % totalPathLength;
-      const pt = giantTransitPath.getPointAtLength(currentLen);
-
-      // 计算切线方向
-      const nextLen = ((progress + 0.005) * totalPathLength) % totalPathLength;
-      const nextPt = giantTransitPath.getPointAtLength(nextLen);
-      const angleDeg = Math.atan2(nextPt.y - pt.y, nextPt.x - pt.x) * (180 / Math.PI) + 90;
-
-      bloodBolusTracer.setAttribute('transform', `translate(${pt.x}, ${pt.y})`);
-      tracerDir.setAttribute('transform', `rotate(${angleDeg})`);
-
-      // 2. 心脏机械收缩光晕
-      const pulseScale = 1.0 + pulseCurve * 0.45;
-      cardiacGlow.style.transform = `translate(-50%, -50%) scale(${pulseScale})`;
-      cardiacGlow.style.opacity = 0.3 + pulseCurve * 0.6;
-
-      // 3. 真实双循环阶段判定与引线高亮激活
-      Object.values(pins).forEach(p => p.className = 'macro-pin-badge');
-
-      let title = "";
-      let desc = "";
-      let isArterial = false;
-      let activeBtnId = "btn-chip-0";
-      let microState = "";
-
-      if (progress < 0.16) {
-        title = "① 右心室 ➔ 肺动脉干";
-        desc = "【肺循环起跑】脱氧静脉血自右心室射出，经肺动脉干涌入左右双肺。";
-        isArterial = false;
-        activeBtnId = "btn-chip-0";
-        pins.pa.className = 'macro-pin-badge active-blue';
-        microState = "红细胞呈暗紫色 · 快速冲向肺部";
-      } else if (progress < 0.38) {
-        title = "② 肺泡微血管 (气体交换)";
-        desc = "【气体交换】穿入树状肺泡微血管，排出 CO₂，吸收 O₂，血红蛋白瞬间染为鲜红！";
-        isArterial = true;
-        activeBtnId = "btn-chip-1";
-        pins.lung.className = 'macro-pin-badge active-red';
-        microState = "红细胞结合氧分子 · 渐变为鲜红色";
-      } else if (progress < 0.52) {
-        title = "③ 肺静脉 ➔ 左心室 (准备射血)";
-        desc = "【富氧血回心】鲜红高氧血汇入左心房，经二尖瓣充盈左心室，蓄积巨大泵血能量。";
-        isArterial = true;
-        activeBtnId = "btn-chip-2";
-        pins.lv.className = 'macro-pin-badge active-red';
-        microState = "心室充盈期 · 二尖瓣即将闭合";
-      } else if (progress < 0.72) {
-        title = "④ 主动脉弓 ➔ 脑部中枢";
-        desc = "【体循环爆发】左心室强力收缩，血液以 500+ mm/s 极速喷入主动脉弓，直冲大脑。";
-        isArterial = true;
-        activeBtnId = "btn-chip-3";
-        pins.aorta.className = 'macro-pin-badge active-red';
-        microState = "收缩期高压喷射 · 超宽推背感";
-      } else if (progress < 0.88) {
-        title = "⑤ 胸腹主动脉 ➔ 全身毛细血管";
-        desc = "【组织释氧】血液下行冲入腹腔内脏与下肢肌群，卸载氧气给细胞呼吸，转为暗紫脱氧血。";
-        isArterial = false;
-        activeBtnId = "btn-chip-4";
-        pins.daorta.className = 'macro-pin-badge active-blue';
-        microState = "外周组织毛细血管 · 卸载氧分子";
-      } else {
-        title = "⑥ 下腔静脉 ➔ 右心房 (完成闭环)";
-        desc = "【静脉回流】缺氧静脉血经静脉瓣防止逆流，平稳汇入右心房，完成一次完整人体大循环！";
-        isArterial = false;
-        activeBtnId = "btn-chip-5";
-        pins.ivc.className = 'macro-pin-badge active-blue';
-        microState = "静脉瓣防逆流 · 重新回到心脏";
-      }
-
-      hudSiteTitle.textContent = title;
-      hudSiteDesc.textContent = desc;
-      microStateText.textContent = microState;
-
-      if (isArterial) {
-        hudBloodTag.textContent = "富氧动脉血";
-        hudBloodTag.className = "blood-type-tag arterial";
-        tracerCore.setAttribute('fill', '#f43f5e');
-      } else {
-        hudBloodTag.textContent = "缺氧静脉血";
-        hudBloodTag.className = "blood-type-tag venous";
-        tracerCore.setAttribute('fill', '#38bdf8');
-      }
-
-      document.querySelectorAll('.jump-btn').forEach(b => b.classList.remove('active'));
-      const activeBtn = document.getElementById(activeBtnId);
-      if (activeBtn) activeBtn.classList.add('active');
-    }
-
-    /* =========================================================================
-       7. 心搏流体动力学主循环
-       ========================================================================= */
     let lastTime = performance.now();
     let s1Triggered = false;
     let s2Triggered = false;
@@ -1399,115 +1947,80 @@
 
       const beatDuration = 60 / STATE.bpm;
       STATE.heartbeatPhase = (STATE.heartbeatPhase + (deltaTime * STATE.speedMultiplier) / beatDuration) % 1.0;
+      STATE.breathingPhase = (STATE.breathingPhase + deltaTime * 0.4) % (Math.PI * 2);
 
       const p = STATE.heartbeatPhase;
       let pulseCurve = 0;
-
-      if (p < 0.35) {
-        pulseCurve = Math.sin((p / 0.35) * Math.PI);
-        if (!s1Triggered && p > 0.02) {
-          soundEngine.playS1();
-          s1Triggered = true;
-          s2Triggered = false;
-        }
-        if (!s2Triggered && p > 0.28) {
-          soundEngine.playS2();
-          s2Triggered = true;
-        }
+      if (p < 0.15) {
+        pulseCurve = Math.sin((p / 0.15) * Math.PI);
+        if (!s1Triggered) { soundEngine.playS1(); s1Triggered = true; }
+      } else if (p > 0.35 && p < 0.48) {
+        pulseCurve = Math.sin(((p - 0.35) / 0.13) * Math.PI) * 0.65;
+        if (!s2Triggered) { soundEngine.playS2(); s2Triggered = true; }
       } else {
-        pulseCurve = 0.15 * Math.sin(((p - 0.35) / 0.65) * Math.PI);
-        if (p > 0.95) {
-          s1Triggered = false;
-        }
+        pulseCurve = 0;
+        if (p > 0.5) { s1Triggered = false; s2Triggered = false; }
       }
 
-      const baseSpeed = 220 * (STATE.bpm / 75);
-      STATE.currentSpeed = (baseSpeed + pulseCurve * 320) * STATE.speedMultiplier;
-
-      const progressDelta = (STATE.currentSpeed * 0.0001) * deltaTime;
-      STATE.curveProgress = (STATE.curveProgress + progressDelta) % 1.0;
-
-      const vesselScale = 1.0 + pulseCurve * 0.055;
-      vesselMesh.scale.set(vesselScale, vesselScale, 1.0);
-      heartLight.intensity = 1.8 + pulseCurve * 2.2;
-
-      // 主角红细胞在 3D 管道中推进
-      const heroPoint = vesselCurve.getPointAt(STATE.curveProgress);
-      const heroTangent = vesselCurve.getTangentAt(STATE.curveProgress).normalize();
-      heroRBC.position.copy(heroPoint);
-      heroFollowLight.position.copy(heroPoint).add(new THREE.Vector3(0, 2, 0));
-
-      // 伴游舰队更新
-      for (let i = 0; i < FLEET_COUNT; i++) {
-        const item = fleetData[i];
-        const prog = (STATE.curveProgress + item.progressOffset) % 1.0;
-        const pt = vesselCurve.getPointAt(prog);
-        const tan = vesselCurve.getTangentAt(prog).normalize();
-
-        const up = new THREE.Vector3(0, 1, 0);
-        const normal = new THREE.Vector3().crossVectors(tan, up).normalize();
-        const binormal = new THREE.Vector3().crossVectors(normal, tan).normalize();
-
-        const offsetX = Math.cos(item.angle) * item.radialDist;
-        const offsetY = Math.sin(item.angle) * item.radialDist;
-        const pos = pt.clone().addScaledVector(normal, offsetX).addScaledVector(binormal, offsetY);
-
-        item.mesh.position.copy(pos);
-        item.mesh.rotation.x += item.rotSpeed.x * deltaTime;
-        item.mesh.rotation.y += item.rotSpeed.y * deltaTime;
-        item.mesh.rotation.z += item.rotSpeed.z * deltaTime;
+      // 心脏 3D 实体舒缩动画
+      if (heartVentriclesMesh && groups.heart.visible) {
+        const sc = 1.0 + pulseCurve * 0.12;
+        heartVentriclesMesh.scale.set(sc, sc, sc);
       }
 
-      // 氧粒子流动
-      const positions = particleSystem.geometry.attributes.position.array;
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        const off = particleOffsets[i];
-        off.progress = (off.progress + progressDelta * off.speedFactor) % 1.0;
-        const pt = vesselCurve.getPointAt(off.progress);
-        const tan = vesselCurve.getTangentAt(off.progress).normalize();
-        const up = new THREE.Vector3(0, 1, 0);
-        const normal = new THREE.Vector3().crossVectors(tan, up).normalize();
-        const binormal = new THREE.Vector3().crossVectors(normal, tan).normalize();
-
-        const px = pt.x + normal.x * (Math.cos(off.angle) * off.radius) + binormal.x * (Math.sin(off.angle) * off.radius);
-        const py = pt.y + normal.y * (Math.cos(off.angle) * off.radius) + binormal.y * (Math.sin(off.angle) * off.radius);
-        const pz = pt.z + normal.z * (Math.cos(off.angle) * off.radius) + binormal.z * (Math.sin(off.angle) * off.radius);
-
-        positions[i * 3] = px;
-        positions[i * 3 + 1] = py;
-        positions[i * 3 + 2] = pz;
-      }
-      particleSystem.geometry.attributes.position.needsUpdate = true;
-
-      // 1/4 微观视窗相机调度
-      if (STATE.cameraMode === 'pov') {
-        const lookAheadProgress = (STATE.curveProgress + 0.04) % 1.0;
-        const lookAtPt = vesselCurve.getPointAt(lookAheadProgress);
-
-        const camPos = heroPoint.clone().add(heroTangent.clone().multiplyScalar(-4.2)).add(new THREE.Vector3(0, 1.2, 0));
-        camera.position.lerp(camPos, 0.2);
-        camera.lookAt(lookAtPt);
-
-        camera.fov = 60 + pulseCurve * 7;
-        camera.updateProjectionMatrix();
-      } else {
-        orbitControls.target.lerp(heroPoint, 0.1);
-        orbitControls.update();
+      // 肺部 3D 呼吸胀缩与微观细胞动画
+      if (groups.lung.visible) {
+        const breathScale = 1.0 + Math.sin(STATE.breathingPhase) * 0.08;
+        lungAlveoliGroup.scale.set(breathScale, breathScale, breathScale);
       }
 
-      // 同步中央巨大人体血液流动轨迹与引线
-      updateGiantHumanCirculation(STATE.curveProgress, pulseCurve);
+      // 血液流动巡游进度推进
+      const flowVel = 120 + pulseCurve * 280;
+      STATE.currentSpeed = flowVel;
+      soundEngine.updateBloodFlowPitch(flowVel);
 
-      // 同步遥测数值
-      document.getElementById('val-speed').innerHTML = `${Math.round(STATE.currentSpeed)}<span class="metric-u">mm/s</span>`;
-      const shearVal = (1.2 + pulseCurve * 2.8).toFixed(1);
-      document.getElementById('val-shear').innerHTML = `${shearVal}<span class="metric-u">Pa</span>`;
-      const deformRatio = (1.20 + pulseCurve * 0.35).toFixed(2);
-      document.getElementById('val-deform').innerHTML = `${deformRatio}<span class="metric-u">伸长比</span>`;
+      STATE.curveProgress = (STATE.curveProgress + (deltaTime * STATE.speedMultiplier * (flowVel / 320)) * 0.04) % 1.0;
+
+      // 移动中心 SVG 上的血液光斑
+      const currentLen = (STATE.curveProgress * totalPathLength) % totalPathLength;
+      const pt = giantTransitPath.getPointAtLength(currentLen);
+      const nextPt = giantTransitPath.getPointAtLength((currentLen + 4) % totalPathLength);
+      const angleDeg = Math.atan2(nextPt.y - pt.y, nextPt.x - pt.x) * (180 / Math.PI) + 90;
+
+      bloodBolusTracer.setAttribute('transform', `translate(${pt.x}, ${pt.y})`);
+      tracerDir.setAttribute('transform', `rotate(${angleDeg})`);
+
+      // 心脏背光光晕
+      const pulseScale = 1.0 + pulseCurve * 0.45;
+      cardiacGlow.style.transform = `translate(-50%, -50%) scale(${pulseScale})`;
+      cardiacGlow.style.opacity = 0.35 + pulseCurve * 0.55;
+
+      // 当处于 blood 模式时，更新 3D 血管管道内的红细胞冲浪运动
+      if (groups.blood.visible) {
+        const rbcProg = STATE.curveProgress;
+        const heroPt = vesselCurve.getPointAt(rbcProg);
+        const heroTan = vesselCurve.getTangentAt(rbcProg);
+        heroRBC.position.copy(heroPt);
+        heroRBC.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), heroTan);
+        heroRBC.rotateZ(STATE.heartbeatPhase * Math.PI * 2);
+
+        fleetData.forEach(item => {
+          const pProg = (rbcProg + item.progressOffset) % 1.0;
+          const fPt = vesselCurve.getPointAt(pProg);
+          item.mesh.position.copy(fPt);
+          item.mesh.rotation.x += item.rotSpeed.x * 0.02;
+          item.mesh.rotation.y += item.rotSpeed.y * 0.02;
+        });
+
+        // 相机跟随红细胞冲浪视角
+        const camPos = heroPt.clone().add(heroTan.clone().multiplyScalar(-5.5)).add(new THREE.Vector3(0, 1.6, 0));
+        camera.position.lerp(camPos, 0.15);
+        camera.lookAt(vesselCurve.getPointAt((rbcProg + 0.05) % 1.0));
+      }
     }
 
     /* =========================================================================
-       8. 交互控制函数
+       8. 交互控制与窗口响应
        ========================================================================= */
     function updateSpeed(val) {
       STATE.speedMultiplier = parseFloat(val);
@@ -1522,37 +2035,12 @@
       document.getElementById('speed-badge').textContent = label;
       document.querySelectorAll('.speed-pill-btn').forEach(b => b.classList.remove('active'));
       const target = el || (window.event ? (window.event.currentTarget || window.event.target) : null);
-      if (target && target.classList) {
-        target.classList.add('active');
-      }
+      if (target && target.classList) target.classList.add('active');
     }
 
     function togglePlayPause() {
       STATE.isPaused = !STATE.isPaused;
       document.getElementById('btn-play-pause').textContent = STATE.isPaused ? "▶️ 继续流动" : "⏸️ 暂停动画";
-    }
-
-    function jumpToAnatomy(targetProgress, btnId) {
-      STATE.curveProgress = targetProgress;
-      document.querySelectorAll('.jump-btn').forEach(b => b.classList.remove('active'));
-      const btn = document.getElementById(btnId);
-      if (btn) btn.classList.add('active');
-    }
-
-    function toggleCameraMode() {
-      STATE.cameraMode = STATE.cameraMode === 'pov' ? 'orbit' : 'pov';
-      const btn = document.getElementById('btn-camera-toggle');
-
-      if (STATE.cameraMode === 'pov') {
-        orbitControls.enabled = false;
-        btn.textContent = "🔄 切换为自由环视";
-      } else {
-        orbitControls.enabled = true;
-        const hp = heroRBC.position;
-        camera.position.set(hp.x + 8, hp.y + 5, hp.z + 8);
-        orbitControls.target.copy(hp);
-        btn.textContent = "🔄 切换为红细胞冲浪";
-      }
     }
 
     function updateBPM(val) {
@@ -1563,14 +2051,6 @@
     function updateSpO2(val) {
       STATE.spo2 = parseInt(val) / 100;
       document.getElementById('val-spo2').textContent = `${val} %`;
-
-      const arterialColor = new THREE.Color(0xe11d48);
-      const venousColor = new THREE.Color(0x500d1e);
-      const targetColor = venousColor.clone().lerp(arterialColor, Math.pow(STATE.spo2, 1.6));
-
-      heroRBC.material.color.copy(targetColor);
-      rbcMaterial.color.copy(targetColor);
-      particleMaterial.color.set(STATE.spo2 > 0.7 ? 0xfbbf24 : 0x38bdf8);
     }
 
     function toggleAudio() {
@@ -1586,7 +2066,7 @@
     }
 
     /* =========================================================================
-       9. 渲染循环与窗口自适应
+       9. 渲染主循环
        ========================================================================= */
     function animate(timestamp) {
       requestAnimationFrame(animate);
@@ -1594,6 +2074,11 @@
       lastTime = timestamp;
 
       updateCardiovascularPhysics(dt);
+
+      if (orbitControls.enabled && !groups.blood.visible) {
+        orbitControls.update();
+      }
+
       renderer.render(scene, camera);
     }
     requestAnimationFrame(animate);
